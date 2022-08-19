@@ -56,18 +56,10 @@ Abaixo estão links de apoio que poderão auxiliar na resolução do desafio.
 
 | Assunto | Link |
 | ------ | ------ |
-| Microsserviços | [https://www.opus-software.com.br/os-beneficios-da-arquitetura-de-micro-servicos/] |
 | Spring Boot | [https://www.devmedia.com.br/primeiros-passos-com-o-spring-boot/33654#Spring] |
 | Spring Boot | [https://www.youtube.com/watch?v=JLShKaS0XxY] |
 | Spring Initializr | [https://start.spring.io/] |
 | API RESTful | [https://mari-azevedo.medium.com/construindo-uma-api-restful-com-java-e-spring-framework-46b74371d107] |
 | Boas práticas Rest | [https://www.youtube.com/watch?v=P-juXKmJy_g] |
-| Migrations | [https://www.youtube.com/results?search_query=migration+java] |
-| Discovery | [https://www.youtube.com/watch?v=Td_6NcZJ4WM] |
-| Discovery | [https://www.youtube.com/watch?v=cOQQYrhYH4U] |
-| Discovery | [https://www.youtube.com/watch?v=-gLLeoS1m6s] |  
-| Discovery | [https://4soft.co/tutorial-how-to-implement-service-discovery-with-eureka-java/] |
-| Feign | [https://domineospring.wordpress.com/2017/06/02/feign-uma-forma-simples-para-consumir-servicos/] |
-| Feign | [https://www.youtube.com/watch?v=zRZuZrwYYc0] |
 | ModelMapper | [https://www.youtube.com/watch?v=HU7bfKG8nV4] |
 | ModelMapper| [https://medium.com/@hectordemedeiros/criando-uma-api-rest-em-springboot-utilizando-modelmapper-b56515c62e84] |
