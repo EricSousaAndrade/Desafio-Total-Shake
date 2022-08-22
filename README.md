@@ -10,6 +10,8 @@ Então vamos ter dois microsserviços: um de Pedido e outro de
 Pagamento, cada um com seu banco de dados e vamos simular a nossa
 aplicação na prática. Então façam um CRUD para cada um dos microsserviços, estruturando-os no padrão camada MVC. Crie os pacotes controller, model, repository, service e dto. Utilize o padrão DTO (data transfer object) no projeto para expormos somente os atributos desejados na aplicação.
 
+Crie exceções personalizadas para cada possivel erro que você encontrar, como por exemplo PedidoNaoEncontradoException.
+
 Crie as APIs dos microsserviços do zero. 
 
 Adicione as dependências que vamos precisar para o projeto. Vamos usar estas, e mais as que você julgar necessárias: 
@@ -63,3 +65,6 @@ Abaixo estão links de apoio que poderão auxiliar na resolução do desafio.
 | Boas práticas Rest | [https://www.youtube.com/watch?v=P-juXKmJy_g] |
 | ModelMapper | [https://www.youtube.com/watch?v=HU7bfKG8nV4] |
 | ModelMapper| [https://medium.com/@hectordemedeiros/criando-uma-api-rest-em-springboot-utilizando-modelmapper-b56515c62e84] |
+
+### Desafio Extra
+Quem conseguir terminar o desafio acima, pode tentar utilizar a paginação do java para paginar as buscar por muitos dados.
