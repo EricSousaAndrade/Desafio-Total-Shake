@@ -1,18 +1,12 @@
-# Desafio-Total-Shake
+# Desafio ToTal Shake: Semana 3
 
-#### Exercício sobre o assunto de Microsserviços.
+#### Criação de um CRUD
 
-A ideia é continuar trabalhando com o Total Shake, e vamos utilizar um tipo de arquitetura de microsserviços em que o Total Shake era um monolito e decidimos quebrar a aplicação em parte e transformá-la em microsserviço.
+A ideia deste desafio é continuar trabalhando com o ToTal Shake, sendo que esta semana vamos praticar a criação de entidades e a conexão com o banco de dados.
 
-Para iniciar um projeto usando o Spring, podemos usar o site padrão "start.spring.io", esse é o Spring Initializr que facilita para começarmos o projeto do zero.
+Desta forma, o objetivo principal é a criação da entidade Pedido e Item Pedido (especificado abaixo) e a realização da conexão com o banco de dados de sua preferência. Para tal, façam um CRUD, estruturando no padrão camada MVC. Crie os pacotes controller, model, repository, service e dto. Utilize o padrão DTO (data transfer object) no projeto para expormos somente os atributos desejados na aplicação.
 
-Então vamos ter dois microsserviços: um de Pedido e outro de
-Pagamento, cada um com seu banco de dados e vamos simular a nossa
-aplicação na prática. Então façam um CRUD para cada um dos microsserviços, estruturando-os no padrão camada MVC. Crie os pacotes controller, model, repository, service e dto. Utilize o padrão DTO (data transfer object) no projeto para expormos somente os atributos desejados na aplicação.
-
-Crie exceções personalizadas para cada possivel erro que você encontrar, como por exemplo PedidoNaoEncontradoException.
-
-Crie as APIs dos microsserviços do zero. 
+Crie exceções personalizadas para cada possivel erro que você encontrar, como por exemplo PedidoNotFoundException.
 
 Adicione as dependências que vamos precisar para o projeto. Vamos usar estas, e mais as que você julgar necessárias: 
 
@@ -22,7 +16,6 @@ Adicione as dependências que vamos precisar para o projeto. Vamos usar estas, e
 - Spring Boot DevTools
 - Lombok
 - Validation
-
 
 ## API Pedidos:
 
