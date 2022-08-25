@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TotalshakeApplication {
+public class TotalShakeApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TotalshakeApplication.class, args);
+		SpringApplication.run(TotalShakeApplication.class, args);
 	}
 
 }
