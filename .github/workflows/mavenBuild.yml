@@ -22,4 +22,4 @@ jobs:
 
       - name: Test and build project
         run: mvn clean package
-        working-directory: ./Desafio-Total_shake
+        working-directory: ./Desafio-Total-Shake
