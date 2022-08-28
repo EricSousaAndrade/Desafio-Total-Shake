@@ -1,8 +1,9 @@
 package br.com.desafio.totalshake.domain.model;
 
-import br.com.desafio.totalshake.exception.QuantidadeInvalidaException;
+import br.com.desafio.totalshake.application.exception.QuantidadeInvalidaException;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "ITEM_PEDIDO")
@@ -19,6 +20,13 @@ public class ItemPedido {
     @ManyToOne
     @JoinColumn(name = "pedido_id")
     private Pedido pedido;
+
+    public ItemPedido(String descricao, int quantidade) {
+        this.descricao = descricao;
+        this.quantidade = quantidade;
+    }
+
+    public ItemPedido(){}
 
     public Pedido getPedido() {
         return pedido;
@@ -52,7 +60,6 @@ public class ItemPedido {
         }
     }
 
-
     public void setId(long id) {
         this.id = id;
     }
@@ -63,5 +70,18 @@ public class ItemPedido {
 
     public Long getId() {
         return this.id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemPedido that = (ItemPedido) o;
+        return Objects.equals(id, that.id) && Objects.equals(descricao, that.descricao) && Objects.equals(pedido, that.pedido);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, descricao, pedido);
     }
 }

@@ -1,5 +1,6 @@
 package br.com.desafio.totalshake.domain.model;
 
+import br.com.desafio.totalshake.application.exception.ItemInexistenteException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,8 +9,8 @@ public class PedidoTest {
 
     @Test
     public void deve_adicionar_itemNoPedido_ERelacionar_corretamente(){
-        Pedido pedido = new Pedido();
-        ItemPedido itemPedido = new ItemPedido();
+        var pedido = new Pedido();
+        var itemPedido = new ItemPedido();
 
         pedido.adicionarItem(itemPedido);
 

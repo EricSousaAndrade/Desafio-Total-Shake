@@ -1,4 +1,4 @@
-package br.com.desafio.totalshake.exception;
+package br.com.desafio.totalshake.application.exception;
 
 public class QuantidadeInvalidaException extends RuntimeException {
 

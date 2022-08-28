@@ -1,4 +1,4 @@
-package br.com.desafio.totalshake.domain.model;
+package br.com.desafio.totalshake.application.exception;
 
 public class ItemInexistenteException extends RuntimeException {
 
