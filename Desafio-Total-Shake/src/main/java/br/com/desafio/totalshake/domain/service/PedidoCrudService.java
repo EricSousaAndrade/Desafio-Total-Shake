@@ -1,5 +1,7 @@
 package br.com.desafio.totalshake.domain.service;
 
+import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
+import br.com.desafio.totalshake.application.controller.response.PedidoDTOResponse;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
@@ -20,35 +22,46 @@ public class PedidoCrudService {
     }
 
     @Transactional
-    public Pedido salvarPedido(Pedido pedido) {
-        pedido.setStatus(Status.CONFIRMADO);
+    public PedidoDTOResponse salvarPedido(PedidoDTOPost pedidoDTOPost) {
+
+        var pedido = pedidoDTOPost.toPedidoModel();
+
+        pedido.setStatus(Status.REALIZADO);
         pedido.setDataHora(LocalDateTime.now());
-        return pedidoRepository.save(pedido);
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoDTOResponse(pedido);
     }
 
     @Transactional
-    public Pedido acrescentarItem(Long pedidoId, Long itemId, int quantidade){
-        var pedido = this.buscarPedido(pedidoId);
+    public PedidoDTOResponse acrescentarItem(Long pedidoId, Long itemId, int quantidade){
+        var pedido = this.buscarPedidoPorId(pedidoId);
         pedido.acrescentarItemDoPedido(itemId, quantidade);
-        return pedidoRepository.save(pedido);
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoDTOResponse(pedido);
     }
 
     @Transactional
-    public Pedido reduzirQuantidadeItem(Long pedidoId, Long itemId, int quantidade) {
-        var pedido = this.buscarPedido(pedidoId);
+    public PedidoDTOResponse reduzirQuantidadeItem(Long pedidoId, Long itemId, int quantidade) {
+        var pedido = this.buscarPedidoPorId(pedidoId);
         pedido.reduzirItemDoPedido(itemId, quantidade);
-        return pedidoRepository.save(pedido);
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoDTOResponse(pedido);
     }
 
     @Transactional
-    public Pedido cancelarPedido(Long idPedido) {
-        var pedido = this.buscarPedido(idPedido);
+    public PedidoDTOResponse cancelarPedido(Long idPedido) {
+        var pedido = this.buscarPedidoPorId(idPedido);
         pedido.setStatus(Status.CANCELADO);
-        return pedidoRepository.save(pedido);
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoDTOResponse(pedido);
     }
 
     @Transactional
-    public Pedido buscarPedido(long idPedido) {
+    public Pedido buscarPedidoPorId(long idPedido) {
         return pedidoRepository
                 .findById(idPedido)
                 .orElseThrow(() -> new PedidoInexistenteException("Pedido inexistente"));

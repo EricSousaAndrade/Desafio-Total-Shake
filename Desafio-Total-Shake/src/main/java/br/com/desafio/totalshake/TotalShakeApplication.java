@@ -8,7 +8,5 @@ public class TotalShakeApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(TotalShakeApplication.class, args);
-		System.out.println("TESTANDO CONTAINER DA APLICAÇÃO");
 	}
-
 }

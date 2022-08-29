@@ -15,7 +15,7 @@ public class PedidoTest {
         pedido.adicionarItem(itemPedido);
 
         assertAll(
-                () -> assertEquals(pedido.getItensPedido().get(0), itemPedido),
+                () -> assertEquals(pedido.getItens().get(0), itemPedido),
                 () -> assertEquals(itemPedido.getPedido(), pedido)
         );
     }
@@ -32,7 +32,7 @@ public class PedidoTest {
         pedido.acrescentarItemDoPedido(1L, 2);
 
         assertAll(
-                () -> assertEquals(3,pedido.getItensPedido().get(0).getQuantidade())
+                () -> assertEquals(3,pedido.getItens().get(0).getQuantidade())
         );
     }
 
@@ -48,7 +48,7 @@ public class PedidoTest {
         pedido.reduzirItemDoPedido(1L, 1);
 
         assertAll(
-                () -> assertEquals(1,pedido.getItensPedido().get(0).getQuantidade())
+                () -> assertEquals(1,pedido.getItens().get(0).getQuantidade())
         );
     }
 
@@ -64,8 +64,8 @@ public class PedidoTest {
         pedido.reduzirItemDoPedido(1L, 3);
 
         assertAll(
-                () -> assertFalse(pedido.getItensPedido().contains(itemPedido)),
-                () -> assertEquals(0, pedido.getItensPedido().size())
+                () -> assertFalse(pedido.getItens().contains(itemPedido)),
+                () -> assertEquals(0, pedido.getItens().size())
         );
     }
 

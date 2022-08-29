@@ -1,11 +1,12 @@
 package br.com.desafio.totalshake.domain.service;
 
+import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
+import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.exception.PedidoInexistenteException;
 import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,23 +32,23 @@ public class PedidoCrudServiceTest {
     @Autowired
     PedidoCrudService pedidoService;
 
+
     @Test
     public void deve_criarUmPedidoComItens_corretamente(){
-        Pedido pedido = new Pedido();
-        List<ItemPedido> itensPedido = new ArrayList<>(Arrays.asList(
-               new ItemPedido("Coca cola", 2),
-               new ItemPedido("Arroz frito",1)
+        PedidoDTOPost pedidoDTOPost = new PedidoDTOPost();
+        List<ItemPedidoDTO> itensPedidoDto = new ArrayList<>(Arrays.asList(
+               new ItemPedidoDTO("Coca cola", 2),
+               new ItemPedidoDTO("Arroz frito",1)
         ));
-        pedido.setItensPedido(itensPedido);
+        pedidoDTOPost.setItens(itensPedidoDto);
 
-        when(pedidoRepository.save(pedido)).thenReturn(pedido);
 
-        var pedidoSalvo = pedidoService.salvarPedido(pedido);
+        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoDTOPost.toPedidoModel());
 
-        assertThat(pedidoSalvo.getItensPedido().size()).isEqualTo(2);
-        assertThat(pedidoSalvo.getStatus()).isEqualTo(Status.CONFIRMADO);
-        assertThat(pedidoSalvo.getDataHora()).isNotNull();
-        verify(pedidoRepository, times(1)).save(pedido);
+        var pedidoSalvo = pedidoService.salvarPedido(pedidoDTOPost);
+
+        assertThat(pedidoSalvo.getItens().size()).isEqualTo(2);
+        verify(pedidoRepository, times(1)).save(any(Pedido.class));
     }
 
     @Test
@@ -58,13 +59,13 @@ public class PedidoCrudServiceTest {
                 new ItemPedido("Arroz frito",1)
         ));
         pedido.setId(1L);
-        pedido.setItensPedido(itensPedido);
+        pedido.setItens(itensPedido);
 
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
 
-        var pedidoEncontrado = pedidoService.buscarPedido(1L);
+        var pedidoEncontrado = pedidoService.buscarPedidoPorId(1L);
 
-        assertThat(pedidoEncontrado.getItensPedido().size()).isEqualTo(2);
+        assertThat(pedidoEncontrado.getItens().size()).isEqualTo(2);
         assertThat(pedidoEncontrado.getId()).isEqualTo(1L);
         verify(pedidoRepository, times(1)).findById(1L);
     }
@@ -76,7 +77,7 @@ public class PedidoCrudServiceTest {
 
         assertThrows(
                 PedidoInexistenteException.class,
-                () -> pedidoService.buscarPedido(1L)
+                () -> pedidoService.buscarPedidoPorId(1L)
         );
 
         verify(pedidoRepository, times(1)).findById(1L);
@@ -94,7 +95,7 @@ public class PedidoCrudServiceTest {
         when(pedidoRepository.save(pedido)).thenReturn(pedido);
 
         var pedidoAcrescentado = pedidoService.acrescentarItem(1L, 2L, 3);
-        var itemPedidoAcrescentado = pedidoAcrescentado.getItensPedido().get(0);
+        var itemPedidoAcrescentado = pedidoAcrescentado.getItens().get(0);
 
         assertThat(itemPedidoAcrescentado.getQuantidade()).isEqualTo(5);
     }
@@ -111,7 +112,7 @@ public class PedidoCrudServiceTest {
         when(pedidoRepository.save(pedido)).thenReturn(pedido);
 
         var pedidoReduzido = pedidoService.reduzirQuantidadeItem(1L, 2L, 1);
-        var itemPedidoReduzido = pedidoReduzido.getItensPedido().get(0);
+        var itemPedidoReduzido = pedidoReduzido.getItens().get(0);
 
         assertThat(itemPedidoReduzido.getQuantidade()).isEqualTo(1);
     }
@@ -129,7 +130,7 @@ public class PedidoCrudServiceTest {
 
         var pedidoSemItens = pedidoService.reduzirQuantidadeItem(1L, 2L, 2);
 
-        assertThat(pedidoSemItens.getItensPedido().size()).isEqualTo(0);
+        assertThat(pedidoSemItens.getItens().size()).isEqualTo(0);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.exception.ItemInexistenteException;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,19 +23,20 @@ public class Pedido {
     private Status status;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
-    private List<ItemPedido> itensPedido;
+    @JsonIgnoreProperties("pedido")
+    private List<ItemPedido> itens;
 
     public void adicionarItem(ItemPedido itemPedido){
         if(itemPedido != null){
             this.garantirNullSafetyItensPedido();
             itemPedido.setPedido(this);
-            itensPedido.add(itemPedido);
+            itens.add(itemPedido);
         }
     }
 
     public void acrescentarItemDoPedido(long idPedido, int quantidade) {
         this.garantirNullSafetyItensPedido();
-        this.itensPedido.stream()
+        this.itens.stream()
                 .filter(itemPedido -> itemPedido.getId() == idPedido)
                 .findFirst()
                 .ifPresentOrElse(
@@ -45,26 +47,26 @@ public class Pedido {
 
     public void reduzirItemDoPedido(long idPedido, int quantidade) {
         this.garantirNullSafetyItensPedido();
-        this.itensPedido.stream()
+        this.itens.stream()
                 .filter(itemPedido -> itemPedido.getId() == idPedido)
                 .findFirst()
                 .ifPresentOrElse(
                         itemPedido -> {
                             int qtdAtual = itemPedido.reduzirQuantidadeItem(quantidade);
                             if(qtdAtual <= 0){
-                                this.itensPedido.remove(itemPedido);
+                                this.itens.remove(itemPedido);
                             }
                         },
                         () -> { throw new ItemInexistenteException("Esse item não existe no pedido"); }
                 );
     }
 
-    public List<ItemPedido> getItensPedido() {
-        return itensPedido;
+    public List<ItemPedido> getItens() {
+        return itens;
     }
 
-    public void setItensPedido(List<ItemPedido> itensPedido) {
-        this.itensPedido = itensPedido;
+    public void setItens(List<ItemPedido> itens) {
+        this.itens = itens;
     }
 
     public LocalDateTime getDataHora() {
@@ -91,9 +93,10 @@ public class Pedido {
         this.id = id;
     }
 
+
     private void garantirNullSafetyItensPedido() {
-        if(itensPedido == null){
-            itensPedido = new ArrayList<>();
+        if(itens == null){
+            itens = new ArrayList<>();
         }
     }
 
@@ -109,6 +112,5 @@ public class Pedido {
     public int hashCode() {
         return Objects.hash(id);
     }
-
 
 }
