@@ -1,5 +1,6 @@
 package br.com.desafio.totalshake.application.controller;
 
+import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.controller.response.PedidoDTOResponse;
 import br.com.desafio.totalshake.domain.service.PedidoCrudService;
@@ -28,6 +29,13 @@ public class PedidoController {
     @GetMapping("/{idPedido}")
     public ResponseEntity<PedidoDTOResponse> buscarPedido(@PathVariable Long idPedido){
         return ResponseEntity.ok(new PedidoDTOResponse(pedidoCrudService.buscarPedidoPorId(idPedido)));
+    }
+
+    @PostMapping("/{idPedido}/adicionar-item")
+    public ResponseEntity<PedidoDTOResponse> adicionarItem(@PathVariable Long idPedido,
+                                                           @RequestBody @Valid ItemPedidoDTO itemPedidoDTO){
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(pedidoCrudService.adicionarItemNoPedido(idPedido, itemPedidoDTO));
     }
 
     @PutMapping("/cancelar/{idPedido}")

@@ -1,13 +1,12 @@
 package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.exception.QuantidadeInvalidaException;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "ITEM_PEDIDO")
+@Table(name = "item_pedido")
 public class ItemPedido {
 
     @Id

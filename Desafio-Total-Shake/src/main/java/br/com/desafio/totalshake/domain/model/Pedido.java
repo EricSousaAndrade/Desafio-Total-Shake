@@ -5,12 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
-@Table(name = "PEDIDO")
+@Table(name = "pedido")
 public class Pedido {
 
     @Id
@@ -27,11 +25,9 @@ public class Pedido {
     private List<ItemPedido> itens;
 
     public void adicionarItem(ItemPedido itemPedido){
-        if(itemPedido != null){
-            this.garantirNullSafetyItensPedido();
-            itemPedido.setPedido(this);
-            itens.add(itemPedido);
-        }
+        this.garantirNullSafetyItensPedido();
+        itemPedido.setPedido(this);
+        itens.add(itemPedido);
     }
 
     public void acrescentarItemDoPedido(long idPedido, int quantidade) {
@@ -92,7 +88,6 @@ public class Pedido {
     public void setId(Long id) {
         this.id = id;
     }
-
 
     private void garantirNullSafetyItensPedido() {
         if(itens == null){

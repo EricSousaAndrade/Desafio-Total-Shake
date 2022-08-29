@@ -1,5 +1,6 @@
 package br.com.desafio.totalshake.domain.service;
 
+import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.controller.response.PedidoDTOResponse;
 import br.com.desafio.totalshake.domain.model.Pedido;
@@ -52,6 +53,16 @@ public class PedidoCrudService {
     }
 
     @Transactional
+    public PedidoDTOResponse adicionarItemNoPedido(Long pedidoId, ItemPedidoDTO itemPedidoDTO) {
+        var pedido = this.buscarPedidoPorId(pedidoId);
+        var itemPedido = itemPedidoDTO.toItemPedidoModel();
+        pedido.adicionarItem(itemPedido);
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoDTOResponse(pedido);
+    }
+
+    @Transactional
     public PedidoDTOResponse cancelarPedido(Long idPedido) {
         var pedido = this.buscarPedidoPorId(idPedido);
         pedido.setStatus(Status.CANCELADO);
@@ -66,4 +77,7 @@ public class PedidoCrudService {
                 .findById(idPedido)
                 .orElseThrow(() -> new PedidoInexistenteException("Pedido inexistente"));
     }
+
+
+
 }

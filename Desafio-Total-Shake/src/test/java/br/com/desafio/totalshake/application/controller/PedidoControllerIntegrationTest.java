@@ -104,6 +104,39 @@ public class PedidoControllerIntegrationTest {
 
     @Test
     @Transactional
+    public void deve_adicionarUmItemNoPedidoComSucesso_e_devolverDTOPedido() throws Exception{
+        var pedido = new Pedido();
+        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
+        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
+        pedido.setStatus(Status.REALIZADO);
+
+        var pedidoSalvo = pedidoRepository.save(pedido);
+
+        var itemPedido = new ItemPedido("Arroz", 4);
+        String itemPedidoRequest = objectMapper.writeValueAsString(itemPedido);
+
+        mockMvc.perform(post(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/adicionar-item")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(itemPedidoRequest)
+                )
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("id").isNotEmpty())
+                .andExpect(jsonPath("dataHora").isNotEmpty())
+                .andExpect(jsonPath("itens").isNotEmpty())
+                .andExpect(jsonPath("itens[1].descricao").value("Arroz"))
+                .andExpect(jsonPath("itens[1].quantidade").value(4));
+
+        Pedido pedidoCriado = pedidoRepository.findAll().get(0);
+        List<ItemPedido> itens = pedidoCriado.getItens();
+
+        assertEquals(2, pedidoCriado.getItens().size());
+        assertEquals(Status.REALIZADO, pedidoCriado.getStatus());
+        assertEquals("Arroz",itens.get(1).getDescricao());
+        assertEquals(4,itens.get(1).getQuantidade());
+    }
+
+    @Test
+    @Transactional
     public void deve_cancelarUmPedido_comSucesso() throws Exception{
         var pedido = new Pedido();
         pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
