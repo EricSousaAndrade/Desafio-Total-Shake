@@ -3,10 +3,11 @@ package br.com.desafio.totalshake.domain.service;
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.controller.response.PedidoDTOResponse;
+import br.com.desafio.totalshake.application.errors.response.CodInternoErroApi;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
-import br.com.desafio.totalshake.application.exception.PedidoInexistenteException;
+import br.com.desafio.totalshake.application.errors.exceptions.PedidoInexistenteException;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -75,9 +76,12 @@ public class PedidoCrudService {
     public Pedido buscarPedidoPorId(long idPedido) {
         return pedidoRepository
                 .findById(idPedido)
-                .orElseThrow(() -> new PedidoInexistenteException("Pedido inexistente"));
+                .orElseThrow(
+                        () -> new PedidoInexistenteException(
+                                CodInternoErroApi.AP002.getCodigo(),
+                                CodInternoErroApi.AP002.getMensagem()
+                        )
+                );
     }
-
-
 
 }

@@ -1,6 +1,6 @@
 package br.com.desafio.totalshake.domain.model;
 
-import br.com.desafio.totalshake.application.exception.QuantidadeInvalidaException;
+import br.com.desafio.totalshake.application.errors.exceptions.QuantidadeInvalidaException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

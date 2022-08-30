@@ -1,6 +1,7 @@
 package br.com.desafio.totalshake.domain.model;
 
-import br.com.desafio.totalshake.application.exception.ItemInexistenteException;
+import br.com.desafio.totalshake.application.errors.exceptions.ItemInexistenteException;
+import br.com.desafio.totalshake.application.errors.response.CodInternoErroApi;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
@@ -37,7 +38,12 @@ public class Pedido {
                 .findFirst()
                 .ifPresentOrElse(
                         itemPedido -> itemPedido.acrescentarQuantidadeItem(quantidade),
-                        () -> { throw new ItemInexistenteException("Esse item não existe no pedido"); }
+                        () -> {
+                            throw new ItemInexistenteException(
+                                    CodInternoErroApi.AP003.getCodigo(),
+                                    CodInternoErroApi.AP003.getMensagem()
+                            );
+                        }
                 );
     }
 
@@ -53,7 +59,12 @@ public class Pedido {
                                 this.itens.remove(itemPedido);
                             }
                         },
-                        () -> { throw new ItemInexistenteException("Esse item não existe no pedido"); }
+                        () -> {
+                            throw new ItemInexistenteException(
+                                    CodInternoErroApi.AP003.getCodigo(),
+                                    CodInternoErroApi.AP003.getMensagem()
+                            );
+                        }
                 );
     }
 

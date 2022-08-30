@@ -1,6 +1,6 @@
 package br.com.desafio.totalshake.domain.model;
 
-import br.com.desafio.totalshake.application.exception.ItemInexistenteException;
+import br.com.desafio.totalshake.application.errors.exceptions.ItemInexistenteException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

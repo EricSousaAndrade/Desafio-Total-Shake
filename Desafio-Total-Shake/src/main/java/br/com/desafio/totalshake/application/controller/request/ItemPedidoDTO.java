@@ -6,7 +6,8 @@ import javax.validation.constraints.*;
 
 public class ItemPedidoDTO {
 
-    @NotNull @Size(min = 3, max = 120)
+    @NotNull @NotBlank
+    @Size(min = 3, max = 120)
     private String descricao;
 
     @Positive @NotNull

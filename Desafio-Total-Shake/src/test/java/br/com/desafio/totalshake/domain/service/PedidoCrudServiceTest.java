@@ -2,7 +2,7 @@ package br.com.desafio.totalshake.domain.service;
 
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
-import br.com.desafio.totalshake.application.exception.PedidoInexistenteException;
+import br.com.desafio.totalshake.application.errors.exceptions.PedidoInexistenteException;
 import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
