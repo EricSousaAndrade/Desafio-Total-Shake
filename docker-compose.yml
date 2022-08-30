@@ -1,0 +1,35 @@
+version: "3.7"
+services: 
+    db-pedido-api:
+      image: mysql:latest
+      container_name: banco_mysql
+      environment:
+        TZ: America/Sao_Paulo  
+        MYSQL_ROOT_PASSWORD: root
+        MYSQL_DATABASE: totalShake
+      ports:
+        - 9090:3306
+      networks:
+        - total-shake_network
+      volumes:
+        - pedido_api_data:/var/lib/mysql
+    
+    totalShake-pedido-api:
+      build:
+        context: ./Desafio-Total-Shake
+        dockerfile: ./Dockerfile 
+      image: crud_pedido_api
+      ports:
+        - 8080:8080
+      networks:
+        - total-shake_network 
+      links:
+        - db-pedido-api
+      depends_on:
+        - db-pedido-api
+
+networks:
+  total-shake_network:
+    driver: bridge      
+volumes:
+  pedido_api_data:
