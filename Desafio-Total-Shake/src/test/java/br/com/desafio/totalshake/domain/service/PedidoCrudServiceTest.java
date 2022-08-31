@@ -3,11 +3,19 @@ package br.com.desafio.totalshake.domain.service;
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.errors.exceptions.PedidoInexistenteException;
+import br.com.desafio.totalshake.builds.PedidoBuilder;
 import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -22,163 +30,169 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ActiveProfiles("test")
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 public class PedidoCrudServiceTest {
 
-    @MockBean
+    @Mock
     private PedidoRepository pedidoRepository;
 
-    @Autowired
     PedidoCrudService pedidoService;
 
-
-    @Test
-    public void deve_criarUmPedidoComItens_corretamente(){
-        PedidoDTOPost pedidoDTOPost = new PedidoDTOPost();
-        List<ItemPedidoDTO> itensPedidoDto = new ArrayList<>(Arrays.asList(
-               new ItemPedidoDTO("Coca cola", 2),
-               new ItemPedidoDTO("Arroz frito",1)
-        ));
-        pedidoDTOPost.setItens(itensPedidoDto);
-
-        when(pedidoRepository.save(any(Pedido.class))).thenReturn(pedidoDTOPost.toPedidoModel());
-
-        var pedidoSalvo = pedidoService.salvarPedido(pedidoDTOPost);
-
-        assertThat(pedidoSalvo.getItens().size()).isEqualTo(2);
-        verify(pedidoRepository, times(1)).save(any(Pedido.class));
+    @BeforeEach
+    public void setUp(){
+        pedidoService = new PedidoCrudService(pedidoRepository);
     }
 
-    @Test
-    public void deve_adicionarUmItemNoPedido_corretamente(){
+    @Nested
+    class testesDeAcoesDoPedido{
 
-        ItemPedidoDTO itemPedidoDto = new ItemPedidoDTO("feijao",2);
-        Pedido pedido = new Pedido();
-        pedido.setId(1L);
+        @Test
+        public void deve_salvarOPedidoESeusItensE_setarStatusComoCriado_aoSalvarUmPedido(){
+            var pedidoDTOPost = umDtoPedidoPostComDoisItens();
+            var pedidoEntidade = pedidoDTOPost.toPedidoModel();
 
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-        when(pedidoRepository.save(pedido)).thenReturn(pedido);
+            ArgumentCaptor<Pedido> pedidoCapturadoNoRetornoDeSave = ArgumentCaptor.forClass(Pedido.class);
+            when(pedidoRepository.save(pedidoEntidade)).thenReturn(pedidoEntidade);
 
-        var pedidoSalvo = pedidoService.adicionarItemNoPedido(1L, itemPedidoDto);
-        var itemPedido = pedido.getItens().get(0);
+            pedidoService.salvarPedido(pedidoDTOPost);
 
-        assertThat(pedidoSalvo.getItens().size()).isEqualTo(1);
-        assertTrue(pedidoSalvo.getItens().contains(itemPedido));
-        verify(pedidoRepository, times(1)).save(any(Pedido.class));
+            verify(pedidoRepository, times(1)).save(pedidoCapturadoNoRetornoDeSave.capture());
+
+            var pedidoCapturado = pedidoCapturadoNoRetornoDeSave.getValue();
+
+            assertEquals(Status.CRIADO, pedidoCapturado.getStatus());
+            assertEquals(2, pedidoCapturado.getItens().size());
+        }
+
+        @Test
+        public void deve_fazerARelacaoEntrePedidoEItem_corretamente(){
+
+            var itemPedidoDto = new ItemPedidoDTO("feijao",2);
+            var pedidoSemItens = PedidoBuilder.umPedido().build();
+
+            when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoSemItens));
+            when(pedidoRepository.save(pedidoSemItens)).thenReturn(pedidoSemItens);
+
+            var pedidoSalvo = pedidoService.adicionarItemNoPedido(1L, itemPedidoDto);
+            var itemPedido = pedidoSemItens.getItens().get(0);
+
+            assertEquals(1,pedidoSalvo.getItens().size());
+            assertTrue(pedidoSalvo.getItens().contains(itemPedido));
+            verify(pedidoRepository, times(1)).save(pedidoSemItens);
+        }
+
+        @Test
+        public void deve_setarOStatusComoRealizado_aoRealizarUmPedido(){
+
+            var pedido = PedidoBuilder.umPedido().build();
+
+            when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
+            when(pedidoRepository.save(pedido)).thenReturn(pedido);
+
+            var pedidoSalvo = pedidoService.realizarPedido(1L);
+
+            assertEquals(Status.REALIZADO, pedidoSalvo.getStatus());
+            verify(pedidoRepository, times(1)).save(pedido);
+        }
+
+        @Test
+        public void deve_retornarUmPedido_aoBuscarPorId(){
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+
+            when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
+
+            var pedidoEncontrado = pedidoService.buscarPedidoPorId(1L);
+
+            assertEquals(1 ,pedidoEncontrado.getItens().size());
+            assertEquals(1L, pedidoEncontrado.getId());
+            verify(pedidoRepository, times(1)).findById(1L);
+        }
+
+        @Test
+        public void deve_lancarExcecaoAoBuscarUmPedido_quandoInexistente(){
+
+            when(pedidoRepository.findById(1L)).thenReturn(Optional.empty());
+
+            assertThrows(
+                    PedidoInexistenteException.class,
+                    () -> pedidoService.buscarPedidoPorId(1L)
+            );
+
+            verify(pedidoRepository, times(1)).findById(1L);
+        }
+
+        @Test
+        public void deve_setarOStatusComoCancelado_aoCancelarUmPedido(){
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+
+            when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
+            when(pedidoRepository.save(pedido)).thenReturn(pedido);
+
+            var pedidoCancelado = pedidoService.cancelarPedido(1L);
+
+            assertThat(pedidoCancelado.getStatus()).isEqualTo(Status.CANCELADO);
+        }
+
+        private PedidoDTOPost umDtoPedidoPostComDoisItens() {
+            PedidoDTOPost pedidoDto = new PedidoDTOPost();
+            List<ItemPedidoDTO> itensPedidoDto = new ArrayList<>(Arrays.asList(
+                    new ItemPedidoDTO("Coca cola", 2),
+                    new ItemPedidoDTO("Arroz frito",1)
+            ));
+            pedidoDto.setItens(itensPedidoDto);
+
+            return pedidoDto;
+        }
+
     }
 
-    @Test
-    public void deve_realizarOPedido_corretamente(){
+    @Nested
+    class testesDeAcoesDoItemPedido{
 
-        Pedido pedido = new Pedido();
-        pedido.setId(1L);
+        @Test
+        public void deve_incrementarAQuantidadeDeUm_itemPedido_corretamente(){
+            var pedidoComUmItem = PedidoBuilder.umPedido().comUmItemPedido().build();
+            var idPedido = pedidoComUmItem.getId();
+            var idItemPedido = pedidoComUmItem.getItens().get(0).getId();
 
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-        when(pedidoRepository.save(pedido)).thenReturn(pedido);
+            when(pedidoRepository.findById(idPedido)).thenReturn(Optional.of(pedidoComUmItem));
+            when(pedidoRepository.save(pedidoComUmItem)).thenReturn(pedidoComUmItem);
 
-        var pedidoSalvo = pedidoService.realizarPedido(1L);
+            var pedidoAcrescentado = pedidoService.acrescentarItem(idPedido, idItemPedido, 3);
+            var itemPedidoAcrescentado = pedidoAcrescentado.getItens().get(0);
 
-        assertEquals(Status.REALIZADO, pedidoSalvo.getStatus());
-        verify(pedidoRepository, times(1)).save(any(Pedido.class));
+            assertEquals(5, itemPedidoAcrescentado.getQuantidade());
+        }
+
+        @Test
+        public void deve_reduzirAQuantidadeDeUm_itemPedido_corretamente(){
+
+            var pedidoComUmItem = PedidoBuilder.umPedido().comUmItemPedido().build();
+            var idPedido = pedidoComUmItem.getId();
+            var idItemPedido = pedidoComUmItem.getItens().get(0).getId();
+
+            when(pedidoRepository.findById(idPedido)).thenReturn(Optional.of(pedidoComUmItem));
+            when(pedidoRepository.save(pedidoComUmItem)).thenReturn(pedidoComUmItem);
+
+
+            var pedidoReduzido = pedidoService.reduzirQuantidadeItem(idPedido, idItemPedido, 1);
+            var itemPedidoReduzido = pedidoReduzido.getItens().get(0);
+
+            assertEquals(1, itemPedidoReduzido.getQuantidade());
+        }
+
+        @Test
+        public void deve_removerUm_itemPedido_quandoQtdRestanteForMenorIgual0(){
+            var pedidoComUmItem = PedidoBuilder.umPedido().comUmItemPedido().build();
+            var idPedido = pedidoComUmItem.getId();
+            var idItemPedido = pedidoComUmItem.getItens().get(0).getId();
+
+            when(pedidoRepository.findById(idPedido)).thenReturn(Optional.of(pedidoComUmItem));
+            when(pedidoRepository.save(pedidoComUmItem)).thenReturn(pedidoComUmItem);
+
+            var pedidoSemItens = pedidoService.reduzirQuantidadeItem(idPedido, idItemPedido, 2);
+
+            assertEquals(0, pedidoSemItens.getItens().size());
+        }
     }
-
-    @Test
-    public void deve_buscarUmPedido_corretamente(){
-        Pedido pedido = new Pedido();
-        List<ItemPedido> itensPedido = new ArrayList<>(Arrays.asList(
-                new ItemPedido("Coca cola", 2),
-                new ItemPedido("Arroz frito",1)
-        ));
-        pedido.setId(1L);
-        pedido.setItens(itensPedido);
-
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-
-        var pedidoEncontrado = pedidoService.buscarPedidoPorId(1L);
-
-        assertThat(pedidoEncontrado.getItens().size()).isEqualTo(2);
-        assertThat(pedidoEncontrado.getId()).isEqualTo(1L);
-        verify(pedidoRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    public void deve_lancarExcecaoAoBuscarUmPedido_quandoInexistente(){
-
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.empty());
-
-        assertThrows(
-                PedidoInexistenteException.class,
-                () -> pedidoService.buscarPedidoPorId(1L)
-        );
-
-        verify(pedidoRepository, times(1)).findById(1L);
-    }
-
-    @Test
-    public void deve_incrementarAQuantidadeDeUm_itemPedido_corretamente(){
-        Pedido pedido = new Pedido();
-        ItemPedido itemPedido = new ItemPedido("Coca", 2);
-        itemPedido.setId(2L);
-        pedido.setId(1L);
-        pedido.adicionarItem(itemPedido);
-
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-        when(pedidoRepository.save(pedido)).thenReturn(pedido);
-
-        var pedidoAcrescentado = pedidoService.acrescentarItem(1L, 2L, 3);
-        var itemPedidoAcrescentado = pedidoAcrescentado.getItens().get(0);
-
-        assertThat(itemPedidoAcrescentado.getQuantidade()).isEqualTo(5);
-    }
-
-    @Test
-    public void deve_reduzirAQuantidadeDeUm_itemPedido_corretamente(){
-        Pedido pedido = new Pedido();
-        ItemPedido itemPedido = new ItemPedido("Coca", 2);
-        itemPedido.setId(2L);
-        pedido.setId(1L);
-        pedido.adicionarItem(itemPedido);
-
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-        when(pedidoRepository.save(pedido)).thenReturn(pedido);
-
-        var pedidoReduzido = pedidoService.reduzirQuantidadeItem(1L, 2L, 1);
-        var itemPedidoReduzido = pedidoReduzido.getItens().get(0);
-
-        assertThat(itemPedidoReduzido.getQuantidade()).isEqualTo(1);
-    }
-
-    @Test
-    public void deve_removerUm_itemPedido_quandoQtdRestanteForMenorIgual0(){
-        Pedido pedido = new Pedido();
-        ItemPedido itemPedido = new ItemPedido("Coca", 2);
-        itemPedido.setId(2L);
-        pedido.setId(1L);
-        pedido.adicionarItem(itemPedido);
-
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-        when(pedidoRepository.save(pedido)).thenReturn(pedido);
-
-        var pedidoSemItens = pedidoService.reduzirQuantidadeItem(1L, 2L, 2);
-
-        assertThat(pedidoSemItens.getItens().size()).isEqualTo(0);
-    }
-
-    @Test
-    public void deve_cancelarUm_pedido_corretamente(){
-        Pedido pedido = new Pedido();
-        ItemPedido itemPedido = new ItemPedido("Coca", 2);
-        itemPedido.setId(2L);
-        pedido.setId(1L);
-        pedido.adicionarItem(itemPedido);
-
-        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-        when(pedidoRepository.save(pedido)).thenReturn(pedido);
-
-        var pedidoCancelado = pedidoService.cancelarPedido(1L);
-
-        assertThat(pedidoCancelado.getStatus()).isEqualTo(Status.CANCELADO);
-    }
-
 }
