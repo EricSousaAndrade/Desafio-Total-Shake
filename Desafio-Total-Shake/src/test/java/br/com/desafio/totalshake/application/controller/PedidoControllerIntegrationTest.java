@@ -79,7 +79,8 @@ public class PedidoControllerIntegrationTest {
 
             assertAll(
                     () -> assertEquals(1, pedidoCriado.getItens().size()),
-                    () -> assertEquals(Status.CRIADO, pedidoCriado.getStatus())
+                    () -> assertEquals(Status.CRIADO, pedidoCriado.getStatus()),
+                    () -> assertNotNull(pedidoCriado.getDataHoraStatus().getDataHoraCriado())
             );
         }
 
@@ -131,10 +132,14 @@ public class PedidoControllerIntegrationTest {
                     .andExpect(jsonPath("id").isNotEmpty())
                     .andExpect(jsonPath("dataHora").isNotEmpty())
                     .andExpect(jsonPath("status").value(Status.REALIZADO.name()))
-                    .andExpect(jsonPath("itens").isNotEmpty());
+                    .andExpect(jsonPath("itens").isNotEmpty())
+                    .andExpect(jsonPath("dataHoraStatus").isNotEmpty());
 
             var pedidoAlterado = pedidoRepository.findAll().get(0);
-            assertEquals(Status.REALIZADO, pedidoAlterado.getStatus());
+            assertAll(
+                    () -> assertEquals(Status.REALIZADO, pedidoAlterado.getStatus()),
+                    () -> assertNotNull(pedidoAlterado.getDataHoraStatus().getDataHoraRealizado())
+            );
         }
 
         @Test
@@ -149,13 +154,15 @@ public class PedidoControllerIntegrationTest {
                     .andExpect(jsonPath("id").isNotEmpty())
                     .andExpect(jsonPath("dataHora").isNotEmpty())
                     .andExpect(jsonPath("status").value(Status.CANCELADO.name()))
-                    .andExpect(jsonPath("itens").isNotEmpty());
+                    .andExpect(jsonPath("itens").isNotEmpty())
+                    .andExpect(jsonPath("dataHoraStatus").isNotEmpty());
 
-            Pedido pedidoCriado = pedidoRepository.findAll().get(0);
+            Pedido pedidoAlterado = pedidoRepository.findAll().get(0);
 
             assertAll(
-                    () ->  assertEquals(1, pedidoCriado.getItens().size()),
-                    () -> assertEquals(Status.CANCELADO, pedidoCriado.getStatus())
+                    () ->  assertEquals(1, pedidoAlterado.getItens().size()),
+                    () -> assertEquals(Status.CANCELADO, pedidoAlterado.getStatus()),
+                    () -> assertNotNull(pedidoAlterado.getDataHoraStatus().getDataHoraCancelado())
             );
         }
     }

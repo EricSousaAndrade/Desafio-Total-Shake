@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -48,7 +47,7 @@ public class PedidoCrudServiceTest {
             ArgumentCaptor<Pedido> pedidoCapturadoNoRetornoDeSave = ArgumentCaptor.forClass(Pedido.class);
             when(pedidoRepository.save(pedidoEntidade)).thenReturn(pedidoEntidade);
 
-            pedidoService.salvarPedido(pedidoDTOPost);
+            pedidoService.criarPedido(pedidoDTOPost);
 
             verify(pedidoRepository, times(1)).save(pedidoCapturadoNoRetornoDeSave.capture());
 
@@ -56,7 +55,49 @@ public class PedidoCrudServiceTest {
 
             assertAll(
                     () -> assertEquals(Status.CRIADO, pedidoCapturado.getStatus()),
+                    () -> assertNotNull(pedidoCapturado.getDataHoraStatus().getDataHoraCriado()),
                     () -> assertEquals(2, pedidoCapturado.getItens().size())
+            );
+        }
+
+        @Test
+        public void deve_setarOStatusComoRealizado_aoRealizarUmPedido(){
+
+            var pedido = PedidoBuilder.umPedido().build();
+            ArgumentCaptor<Pedido> pedidoCapturadoNoRetornoDeSave = ArgumentCaptor.forClass(Pedido.class);
+
+            when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
+            when(pedidoRepository.save(pedido)).thenReturn(pedido);
+
+            pedidoService.realizarPedido(1L);
+
+            verify(pedidoRepository, times(1)).save(pedidoCapturadoNoRetornoDeSave.capture());
+
+            var pedidoCapturado = pedidoCapturadoNoRetornoDeSave.getValue();
+
+            assertAll(
+                    () -> assertEquals(Status.REALIZADO, pedidoCapturado.getStatus()),
+                    () -> assertNotNull(pedidoCapturado.getDataHoraStatus().getDataHoraRealizado())
+            );
+        }
+
+        @Test
+        public void deve_setarOStatusComoCancelado_aoCancelarUmPedido(){
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+            ArgumentCaptor<Pedido> pedidoCapturadoNoRetornoDeSave = ArgumentCaptor.forClass(Pedido.class);
+
+            when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
+            when(pedidoRepository.save(pedido)).thenReturn(pedido);
+
+            pedidoService.cancelarPedido(1L);
+
+            verify(pedidoRepository, times(1)).save(pedidoCapturadoNoRetornoDeSave.capture());
+
+            var pedidoCapturado = pedidoCapturadoNoRetornoDeSave.getValue();
+
+            assertAll(
+                    () -> assertEquals(Status.CANCELADO, pedidoCapturado.getStatus()),
+                    () -> assertNotNull(pedidoCapturado.getDataHoraStatus().getDataHoraCancelado())
             );
         }
 
@@ -78,20 +119,6 @@ public class PedidoCrudServiceTest {
             );
 
             verify(pedidoRepository, times(1)).save(pedidoSemItens);
-        }
-
-        @Test
-        public void deve_setarOStatusComoRealizado_aoRealizarUmPedido(){
-
-            var pedido = PedidoBuilder.umPedido().build();
-
-            when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-            when(pedidoRepository.save(pedido)).thenReturn(pedido);
-
-            var pedidoSalvo = pedidoService.realizarPedido(1L);
-
-            assertEquals(Status.REALIZADO, pedidoSalvo.getStatus());
-            verify(pedidoRepository, times(1)).save(pedido);
         }
 
         @Test
@@ -120,18 +147,6 @@ public class PedidoCrudServiceTest {
             );
 
             verify(pedidoRepository, times(1)).findById(1L);
-        }
-
-        @Test
-        public void deve_setarOStatusComoCancelado_aoCancelarUmPedido(){
-            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
-
-            when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
-            when(pedidoRepository.save(pedido)).thenReturn(pedido);
-
-            var pedidoCancelado = pedidoService.cancelarPedido(1L);
-
-            assertThat(pedidoCancelado.getStatus()).isEqualTo(Status.CANCELADO);
         }
 
         private PedidoDTOPost umDtoPedidoPostComDoisItens() {

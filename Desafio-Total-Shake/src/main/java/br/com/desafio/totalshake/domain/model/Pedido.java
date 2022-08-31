@@ -15,6 +15,13 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @OneToOne(
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            mappedBy = "pedido"
+    )
+    private DataHoraStatusPedido dataHoraStatus;
+
     private LocalDateTime dataHora;
 
     @Enumerated(EnumType.STRING)
@@ -31,6 +38,13 @@ public class Pedido {
         this.garantirNullSafetyItens();
         itemPedido.setPedido(this);
         itens.add(itemPedido);
+    }
+
+    public DataHoraStatusPedido getDataHoraStatus() {
+        if(this.dataHoraStatus == null){
+            this.dataHoraStatus = new DataHoraStatusPedido();
+        }
+        return dataHoraStatus;
     }
 
     public void acrescentarItemDoPedido(long idItemPedido, int quantidade) {
@@ -66,6 +80,11 @@ public class Pedido {
                             );
                         }
                 );
+    }
+
+    @PrePersist
+    public void setarUltimaAtualizacaoPedido(){
+        this.dataHora = LocalDateTime.now();
     }
 
     public List<ItemPedido> getItens() {

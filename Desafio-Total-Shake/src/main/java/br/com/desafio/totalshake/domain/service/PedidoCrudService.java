@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-
 @Service
 public class PedidoCrudService {
 
@@ -24,12 +22,33 @@ public class PedidoCrudService {
     }
 
     @Transactional
-    public PedidoDTOResponse salvarPedido(PedidoDTOPost pedidoDTOPost) {
+    public PedidoDTOResponse criarPedido(PedidoDTOPost pedidoDTOPost) {
 
         var pedido = pedidoDTOPost.toPedidoModel();
 
         pedido.setStatus(Status.CRIADO);
-        pedido.setDataHora(LocalDateTime.now());
+        pedido.getDataHoraStatus().salvarDataHoraCriacao();
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoDTOResponse(pedido);
+    }
+
+    @Transactional
+    public PedidoDTOResponse realizarPedido(Long idPedido) {
+        var pedido = buscarPedidoPorId(idPedido);
+
+        pedido.setStatus(Status.REALIZADO);
+        pedido.getDataHoraStatus().salvarDataHoraRealizado();
+        pedido = pedidoRepository.save(pedido);
+
+        return new PedidoDTOResponse(pedido);
+    }
+
+    @Transactional
+    public PedidoDTOResponse cancelarPedido(Long idPedido) {
+        var pedido = this.buscarPedidoPorId(idPedido);
+        pedido.setStatus(Status.CANCELADO);
+        pedido.getDataHoraStatus().salvarDataHoraCancelado();
         pedido = pedidoRepository.save(pedido);
 
         return new PedidoDTOResponse(pedido);
@@ -64,16 +83,6 @@ public class PedidoCrudService {
     }
 
     @Transactional
-    public PedidoDTOResponse cancelarPedido(Long idPedido) {
-        var pedido = this.buscarPedidoPorId(idPedido);
-        pedido.setStatus(Status.CANCELADO);
-        pedido.setDataHora(LocalDateTime.now());
-        pedido = pedidoRepository.save(pedido);
-
-        return new PedidoDTOResponse(pedido);
-    }
-
-    @Transactional
     public Pedido buscarPedidoPorId(Long idPedido) {
         return pedidoRepository
                 .findById(idPedido)
@@ -85,14 +94,4 @@ public class PedidoCrudService {
                 );
     }
 
-    @Transactional
-    public PedidoDTOResponse realizarPedido(Long idPedido) {
-        var pedido = buscarPedidoPorId(idPedido);
-
-        pedido.setStatus(Status.REALIZADO);
-        pedido.setDataHora(LocalDateTime.now());
-        pedido = pedidoRepository.save(pedido);
-
-        return new PedidoDTOResponse(pedido);
-    }
 }

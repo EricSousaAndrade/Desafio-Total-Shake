@@ -23,7 +23,7 @@ public class PedidoController {
     @PostMapping
     public ResponseEntity<PedidoDTOResponse> criarPedido(@RequestBody @Valid PedidoDTOPost pedidoPostDTO){
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(pedidoCrudService.salvarPedido(pedidoPostDTO));
+                .body(pedidoCrudService.criarPedido(pedidoPostDTO));
     }
 
     @GetMapping("/{idPedido}")
