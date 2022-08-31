@@ -38,6 +38,11 @@ public class PedidoController {
                 .body(pedidoCrudService.adicionarItemNoPedido(idPedido, itemPedidoDTO));
     }
 
+    @PutMapping("/{idPedido}/realizar")
+    public ResponseEntity<PedidoDTOResponse> realizarPedido(@PathVariable Long idPedido){
+        return ResponseEntity.ok(pedidoCrudService.realizarPedido(idPedido));
+    }
+
     @PutMapping("/{idPedido}/cancelar")
     public ResponseEntity<PedidoDTOResponse> cancelarPedido(@PathVariable Long idPedido){
         return ResponseEntity.ok(pedidoCrudService.cancelarPedido(idPedido));

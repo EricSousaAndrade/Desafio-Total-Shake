@@ -27,21 +27,11 @@ public class Pedido {
     )
     private List<ItemPedido> itens;
 
-    @OneToMany(
-            mappedBy = "pedido",
-            cascade = CascadeType.ALL,
-            fetch = FetchType.LAZY
-    )
-    private Set<ItemPedido> itensDoPedido;
-
-
-
     public void adicionarItem(ItemPedido itemPedido){
         this.garantirNullSafetyItens();
         itemPedido.setPedido(this);
         itens.add(itemPedido);
     }
-
 
     public void acrescentarItemDoPedido(long idPedido, int quantidade) {
         this.garantirNullSafetyItens();

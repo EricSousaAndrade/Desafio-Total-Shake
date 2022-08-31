@@ -19,8 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("test")
@@ -66,6 +65,21 @@ public class PedidoCrudServiceTest {
 
         assertThat(pedidoSalvo.getItens().size()).isEqualTo(1);
         assertTrue(pedidoSalvo.getItens().contains(itemPedido));
+        verify(pedidoRepository, times(1)).save(any(Pedido.class));
+    }
+
+    @Test
+    public void deve_realizarOPedido_corretamente(){
+
+        Pedido pedido = new Pedido();
+        pedido.setId(1L);
+
+        when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
+        when(pedidoRepository.save(pedido)).thenReturn(pedido);
+
+        var pedidoSalvo = pedidoService.realizarPedido(1L);
+
+        assertEquals(Status.REALIZADO, pedidoSalvo.getStatus());
         verify(pedidoRepository, times(1)).save(any(Pedido.class));
     }
 

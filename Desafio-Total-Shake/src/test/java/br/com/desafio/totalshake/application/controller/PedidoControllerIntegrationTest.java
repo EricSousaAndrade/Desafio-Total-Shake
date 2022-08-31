@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -59,7 +60,7 @@ public class PedidoControllerIntegrationTest {
 
     @Test
     @Transactional
-    public void deve_criarUmPedidoComItens_e_devolverDTOPedidoCriado() throws Exception{
+    public void deve_criarUmPedidoComItens_e_devolverDTOPedidoStatusCriado() throws Exception{
         var pedidoRequest = new PedidoDTOPost();
         pedidoRequest.setItens(new ArrayList<>(Arrays.asList(
                 new ItemPedidoDTO("Coca-cola", 2),
@@ -79,7 +80,29 @@ public class PedidoControllerIntegrationTest {
 
         List<Pedido> pedidoCriado = pedidoRepository.findAll();
         assertEquals(2, pedidoCriado.get(0).getItens().size());
-        assertEquals(Status.REALIZADO, pedidoCriado.get(0).getStatus());
+        assertEquals(Status.CRIADO, pedidoCriado.get(0).getStatus());
+    }
+
+    @Test
+    @Transactional
+    public void deve_realizarUmPedidoCriado_e_devolverDTOPedidoComStatusRealizado() throws Exception{
+
+        var pedido = new Pedido();
+        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
+        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
+        pedido.setStatus(Status.REALIZADO);
+
+        var pedidoSalvo = pedidoRepository.save(pedido);
+
+        mockMvc.perform(put(PEDIDO_URI+"/"+ pedidoSalvo.getId() +"/realizar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("id").isNotEmpty())
+                .andExpect(jsonPath("dataHora").isNotEmpty())
+                .andExpect(jsonPath("status").value(Status.REALIZADO.name()))
+                .andExpect(jsonPath("itens").isNotEmpty());
+
+        Pedido pedidoCriado = pedidoRepository.findAll().get(0);
+        assertEquals(Status.REALIZADO, pedidoCriado.getStatus());
     }
 
     @Test
