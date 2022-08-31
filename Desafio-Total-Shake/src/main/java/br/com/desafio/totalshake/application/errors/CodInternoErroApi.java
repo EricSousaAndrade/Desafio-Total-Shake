@@ -1,4 +1,4 @@
-package br.com.desafio.totalshake.application.errors.response;
+package br.com.desafio.totalshake.application.errors;
 
 public enum CodInternoErroApi {
     AP001("AP-001", "Um ou mais campos invalidos"),

@@ -1,7 +1,7 @@
 package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.errors.exceptions.QuantidadeInvalidaException;
-import br.com.desafio.totalshake.application.errors.response.CodInternoErroApi;
+import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
 
 import javax.persistence.*;
 import java.util.Objects;

@@ -3,7 +3,6 @@ package br.com.desafio.totalshake.application.errors;
 import br.com.desafio.totalshake.application.errors.exceptions.ItemInexistenteException;
 import br.com.desafio.totalshake.application.errors.exceptions.PedidoInexistenteException;
 import br.com.desafio.totalshake.application.errors.exceptions.QuantidadeInvalidaException;
-import br.com.desafio.totalshake.application.errors.response.CodInternoErroApi;
 import br.com.desafio.totalshake.application.errors.response.ErroCampoResponseDTO;
 import br.com.desafio.totalshake.application.errors.response.ExceptionResponseDTO;
 import org.springframework.http.HttpStatus;
@@ -35,7 +34,6 @@ public class ApiExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
-
     @ExceptionHandler(PedidoInexistenteException.class)
     public ResponseEntity<ExceptionResponseDTO> handlePedidoInexistenteException(PedidoInexistenteException ex, WebRequest request) {
         ExceptionResponseDTO error = new ExceptionResponseDTO(
@@ -59,7 +57,7 @@ public class ApiExceptionHandler {
     }
 
     @ExceptionHandler(QuantidadeInvalidaException.class)
-    public ResponseEntity<ExceptionResponseDTO> handleItemInexistenteException(QuantidadeInvalidaException ex, WebRequest request) {
+    public ResponseEntity<ExceptionResponseDTO> handleQuantidadeInvalidaException(QuantidadeInvalidaException ex, WebRequest request) {
         ExceptionResponseDTO error = new ExceptionResponseDTO(
                 HttpStatus.BAD_REQUEST.value(),
                 ex.getMessage(),

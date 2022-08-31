@@ -2,6 +2,7 @@ package br.com.desafio.totalshake.application.controller;
 
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
+import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
 import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
@@ -83,6 +84,30 @@ public class PedidoControllerIntegrationTest {
 
     @Test
     @Transactional
+    public void deve_lancarExcecaoDeArgumentosInvalidos_e_devolverDTODeErroParaOCliente() throws Exception{
+        var pedidoRequest = new PedidoDTOPost();
+        pedidoRequest.setItens(new ArrayList<>(Arrays.asList(
+                new ItemPedidoDTO(" ", 2),
+                new ItemPedidoDTO("Trakinas", -1)
+        )));
+
+        String pedidoRequestJson = objectMapper.writeValueAsString(pedidoRequest);
+
+        mockMvc.perform(post(PEDIDO_URI)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(pedidoRequestJson)
+                )
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP001.getMensagem()))
+                .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP001.getCodigo()))
+                .andExpect(jsonPath("erros").isNotEmpty());
+
+        int registrosDePedidoNoDatabase = pedidoRepository.findAll().size();
+        assertEquals(0, registrosDePedidoNoDatabase);
+    }
+
+    @Test
+    @Transactional
     public void deve_buscarUmPedidoComSucesso_e_devolverDTOPedido() throws Exception{
         var pedido = new Pedido();
         pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
@@ -100,6 +125,19 @@ public class PedidoControllerIntegrationTest {
         List<Pedido> pedidoCriado = pedidoRepository.findAll();
         assertEquals(1, pedidoCriado.get(0).getItens().size());
         assertEquals(Status.REALIZADO, pedidoCriado.get(0).getStatus());
+    }
+
+    @Test
+    @Transactional
+    public void deve_lancarExcecaoDePedidoInexistente_e_devolverDTODeErroParaOCliente() throws Exception{
+
+        mockMvc.perform(get(PEDIDO_URI +"/"+1L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP002.getMensagem()))
+                .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP002.getCodigo()));
+
+        int registrosDePedidoNoDatabase = pedidoRepository.findAll().size();
+        assertEquals(0, registrosDePedidoNoDatabase);
     }
 
     @Test
@@ -137,6 +175,28 @@ public class PedidoControllerIntegrationTest {
 
     @Test
     @Transactional
+    public void deve_lancarExcecaoDeItemInexistente_e_devolverDTODeErroParaOCliente() throws Exception{
+        var pedido = new Pedido();
+        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
+        pedido.setStatus(Status.CONFIRMADO);
+
+        var pedidoSalvo = pedidoRepository.save(pedido);
+
+        mockMvc.perform(
+                        put(PEDIDO_URI +"/" +pedidoSalvo.getId()
+                                +"/itens/" +2L +"/acrescentar/"+1)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP003.getMensagem()))
+                .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP003.getCodigo()));
+
+
+        var pedidoDB = pedidoRepository.findAll().get(0);
+        assertEquals(0, pedidoDB.getItens().size());
+    }
+
+    @Test
+    @Transactional
     public void deve_cancelarUmPedido_comSucesso() throws Exception{
         var pedido = new Pedido();
         pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
@@ -145,7 +205,7 @@ public class PedidoControllerIntegrationTest {
 
         var pedidoSalvo = pedidoRepository.save(pedido);
 
-        mockMvc.perform(put(PEDIDO_URI +"/cancelar/"+pedidoSalvo.getId()))
+        mockMvc.perform(put(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/cancelar"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").isNotEmpty())
                 .andExpect(jsonPath("dataHora").isNotEmpty())
@@ -215,5 +275,30 @@ public class PedidoControllerIntegrationTest {
         assertEquals(1, pedidoCriado.getItens().size());
         assertEquals(1, itemDoPedidoCriado.getQuantidade());
         assertEquals(Status.CONFIRMADO, pedidoCriado.getStatus());
+    }
+
+    @Test
+    @Transactional
+    public void deve_lancarExcecaoDeQuantidadeInvalida_e_devolverDTODeErroParaOCliente() throws Exception{
+        var pedido = new Pedido();
+        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
+        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
+        pedido.setStatus(Status.CONFIRMADO);
+
+        var pedidoSalvo = pedidoRepository.save(pedido);
+        var itemDoPedido = pedidoSalvo.getItens().get(0);
+        var quantidadeInvalida = -2;
+
+        mockMvc.perform(
+                        put(PEDIDO_URI +"/" +pedidoSalvo.getId()
+                                +"/itens/" +itemDoPedido.getId() +"/reduzir/"+quantidadeInvalida)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP004.getMensagem()))
+                .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP004.getCodigo()));
+
+
+        var pedidoDB = pedidoRepository.findAll().get(0);
+        assertEquals(2, pedidoDB.getItens().get(0).getQuantidade());
     }
 }

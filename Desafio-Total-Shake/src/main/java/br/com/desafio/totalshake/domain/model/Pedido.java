@@ -1,8 +1,7 @@
 package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.errors.exceptions.ItemInexistenteException;
-import br.com.desafio.totalshake.application.errors.response.CodInternoErroApi;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -21,18 +20,31 @@ public class Pedido {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("pedido")
+    @OneToMany(
+            mappedBy = "pedido",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
     private List<ItemPedido> itens;
 
+    @OneToMany(
+            mappedBy = "pedido",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+    private Set<ItemPedido> itensDoPedido;
+
+
+
     public void adicionarItem(ItemPedido itemPedido){
-        this.garantirNullSafetyItensPedido();
+        this.garantirNullSafetyItens();
         itemPedido.setPedido(this);
         itens.add(itemPedido);
     }
 
+
     public void acrescentarItemDoPedido(long idPedido, int quantidade) {
-        this.garantirNullSafetyItensPedido();
+        this.garantirNullSafetyItens();
         this.itens.stream()
                 .filter(itemPedido -> itemPedido.getId() == idPedido)
                 .findFirst()
@@ -48,7 +60,7 @@ public class Pedido {
     }
 
     public void reduzirItemDoPedido(long idPedido, int quantidade) {
-        this.garantirNullSafetyItensPedido();
+        this.garantirNullSafetyItens();
         this.itens.stream()
                 .filter(itemPedido -> itemPedido.getId() == idPedido)
                 .findFirst()
@@ -100,7 +112,7 @@ public class Pedido {
         this.id = id;
     }
 
-    private void garantirNullSafetyItensPedido() {
+    private void garantirNullSafetyItens() {
         if(itens == null){
             itens = new ArrayList<>();
         }
