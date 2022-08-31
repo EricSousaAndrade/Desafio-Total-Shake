@@ -4,7 +4,6 @@ import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.errors.exceptions.PedidoInexistenteException;
 import br.com.desafio.totalshake.builds.PedidoBuilder;
-import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
@@ -14,12 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -60,8 +54,10 @@ public class PedidoCrudServiceTest {
 
             var pedidoCapturado = pedidoCapturadoNoRetornoDeSave.getValue();
 
-            assertEquals(Status.CRIADO, pedidoCapturado.getStatus());
-            assertEquals(2, pedidoCapturado.getItens().size());
+            assertAll(
+                    () -> assertEquals(Status.CRIADO, pedidoCapturado.getStatus()),
+                    () -> assertEquals(2, pedidoCapturado.getItens().size())
+            );
         }
 
         @Test
@@ -76,8 +72,11 @@ public class PedidoCrudServiceTest {
             var pedidoSalvo = pedidoService.adicionarItemNoPedido(1L, itemPedidoDto);
             var itemPedido = pedidoSemItens.getItens().get(0);
 
-            assertEquals(1,pedidoSalvo.getItens().size());
-            assertTrue(pedidoSalvo.getItens().contains(itemPedido));
+            assertAll(
+                    () ->  assertEquals(1,pedidoSalvo.getItens().size()),
+                    () ->  assertTrue(pedidoSalvo.getItens().contains(itemPedido))
+            );
+
             verify(pedidoRepository, times(1)).save(pedidoSemItens);
         }
 
@@ -103,8 +102,10 @@ public class PedidoCrudServiceTest {
 
             var pedidoEncontrado = pedidoService.buscarPedidoPorId(1L);
 
-            assertEquals(1 ,pedidoEncontrado.getItens().size());
-            assertEquals(1L, pedidoEncontrado.getId());
+            assertAll(
+                    () -> assertEquals(1 ,pedidoEncontrado.getItens().size()),
+                    () -> assertEquals(1L, pedidoEncontrado.getId())
+            );
             verify(pedidoRepository, times(1)).findById(1L);
         }
 

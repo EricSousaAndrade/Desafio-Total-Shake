@@ -1,6 +1,7 @@
 package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.errors.exceptions.ItemInexistenteException;
+import br.com.desafio.totalshake.builds.PedidoBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,14 +39,10 @@ public class PedidoTest {
 
     @Test
     public void deve_reduzir_ItensDoPedido_corretamente(){
-        Pedido pedido = new Pedido();
-        ItemPedido itemPedido = new ItemPedido();
-        itemPedido.setId(1L);
-        itemPedido.setDescricao("Coca");
-        itemPedido.setQuantidade(2);
+        var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+        var idItemPedido = pedido.getItens().get(0).getId();
 
-        pedido.adicionarItem(itemPedido);
-        pedido.reduzirItemDoPedido(1L, 1);
+        pedido.reduzirItemDoPedido(idItemPedido, 1);
 
         assertAll(
                 () -> assertEquals(1,pedido.getItens().get(0).getQuantidade())
@@ -54,14 +51,11 @@ public class PedidoTest {
 
     @Test
     public void deve_remover_ItemDoPedido_quandoQuantidadeRestanteMenorIgualA0_(){
-        Pedido pedido = new Pedido();
-        ItemPedido itemPedido = new ItemPedido();
-        itemPedido.setId(1L);
-        itemPedido.setDescricao("Coca");
-        itemPedido.setQuantidade(2);
+        var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+        var itemPedido = pedido.getItens().get(0);
+        var idItemPedido = itemPedido.getId();
 
-        pedido.adicionarItem(itemPedido);
-        pedido.reduzirItemDoPedido(1L, 3);
+        pedido.reduzirItemDoPedido(idItemPedido, 3);
 
         assertAll(
                 () -> assertFalse(pedido.getItens().contains(itemPedido)),

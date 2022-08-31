@@ -33,10 +33,10 @@ public class Pedido {
         itens.add(itemPedido);
     }
 
-    public void acrescentarItemDoPedido(long idPedido, int quantidade) {
+    public void acrescentarItemDoPedido(long idItemPedido, int quantidade) {
         this.garantirNullSafetyItens();
         this.itens.stream()
-                .filter(itemPedido -> itemPedido.getId() == idPedido)
+                .filter(itemPedido -> itemPedido.getId() == idItemPedido)
                 .findFirst()
                 .ifPresentOrElse(
                         itemPedido -> itemPedido.acrescentarQuantidadeItem(quantidade),
@@ -49,17 +49,15 @@ public class Pedido {
                 );
     }
 
-    public void reduzirItemDoPedido(long idPedido, int quantidade) {
+    public void reduzirItemDoPedido(long idItemPedido, int quantidade) {
         this.garantirNullSafetyItens();
         this.itens.stream()
-                .filter(itemPedido -> itemPedido.getId() == idPedido)
+                .filter(itemPedido -> itemPedido.getId() == idItemPedido)
                 .findFirst()
                 .ifPresentOrElse(
                         itemPedido -> {
                             int qtdAtual = itemPedido.reduzirQuantidadeItem(quantidade);
-                            if(qtdAtual <= 0){
-                                this.itens.remove(itemPedido);
-                            }
+                            if(qtdAtual <= 0){ this.itens.remove(itemPedido); }
                         },
                         () -> {
                             throw new ItemInexistenteException(
