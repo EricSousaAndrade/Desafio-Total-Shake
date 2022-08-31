@@ -3,6 +3,7 @@ package br.com.desafio.totalshake.application.controller;
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
+import br.com.desafio.totalshake.builders.PedidoBuilder;
 import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
@@ -10,6 +11,7 @@ import br.com.desafio.totalshake.domain.repository.PedidoRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,15 +21,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,270 +55,276 @@ public class PedidoControllerIntegrationTest {
        pedidoRepository.deleteAll();
     }
 
-    @Test
-    @Transactional
-    public void deve_criarUmPedidoComItens_e_devolverDTOPedidoStatusCriado() throws Exception{
-        var pedidoRequest = new PedidoDTOPost();
-        pedidoRequest.setItens(new ArrayList<>(Arrays.asList(
-                new ItemPedidoDTO("Coca-cola", 2),
-                new ItemPedidoDTO("Trakinas", 2)
-        )));
+    @Nested
+    class TestesCriacaoDePedido{
 
-        String pedidoRequestJson = objectMapper.writeValueAsString(pedidoRequest);
+        @Test
+        @Transactional
+        public void deve_criarUmPedidoComUmItem_e_devolverDTOPedidoStatusCriado() throws Exception{
+            var pedidoRequest = PedidoBuilder.umPedido().comUmItemPedido().build();
 
-        mockMvc.perform(post(PEDIDO_URI)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(pedidoRequestJson)
-                )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("dataHora").isNotEmpty())
-                .andExpect(jsonPath("itens").isNotEmpty());
+            String pedidoRequestJson = objectMapper.writeValueAsString(pedidoRequest);
 
-        List<Pedido> pedidoCriado = pedidoRepository.findAll();
-        assertEquals(2, pedidoCriado.get(0).getItens().size());
-        assertEquals(Status.CRIADO, pedidoCriado.get(0).getStatus());
+            mockMvc.perform(post(PEDIDO_URI)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(pedidoRequestJson)
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("id").isNotEmpty())
+                    .andExpect(jsonPath("dataHora").isNotEmpty())
+                    .andExpect(jsonPath("status").value(Status.CRIADO.name()))
+                    .andExpect(jsonPath("itens").isNotEmpty());
+
+            var pedidoCriado = pedidoRepository.findAll().get(0);
+
+            assertAll(
+                    () -> assertEquals(1, pedidoCriado.getItens().size()),
+                    () -> assertEquals(Status.CRIADO, pedidoCriado.getStatus())
+            );
+        }
+
+        @Test
+        @Transactional
+        public void deve_lancarExcecaoDeArgumentosInvalidos_e_devolverErrosParaOCliente() throws Exception{
+            var pedidoRequestInvalido = umPedidoComItensInvalidos();
+
+            String pedidoRequestJson = objectMapper.writeValueAsString(pedidoRequestInvalido);
+
+            mockMvc.perform(post(PEDIDO_URI)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(pedidoRequestJson)
+                    )
+                    .andExpect(status().isUnprocessableEntity())
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP001.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP001.getCodigo()))
+                    .andExpect(jsonPath("erros").isNotEmpty());
+
+            int registrosDePedidoNoDatabase = pedidoRepository.findAll().size();
+            assertEquals(0, registrosDePedidoNoDatabase);
+        }
+
+        private PedidoDTOPost umPedidoComItensInvalidos() {
+            var pedidoDto = new PedidoDTOPost();
+            pedidoDto.setItens(new ArrayList<>(Arrays.asList(
+                    new ItemPedidoDTO(" ", 2),
+                    new ItemPedidoDTO("Trakinas", -1)
+            )));
+
+            return pedidoDto;
+        }
+
     }
 
-    @Test
-    @Transactional
-    public void deve_realizarUmPedidoCriado_e_devolverDTOPedidoComStatusRealizado() throws Exception{
+    @Nested
+    class TestesAtualizacaoDoStatusDePedido{
 
-        var pedido = new Pedido();
-        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
-        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
-        pedido.setStatus(Status.REALIZADO);
+        @Test
+        @Transactional
+        public void deve_alterarUmPedidoExistenteParaRealizadoE_devolverDTOParaOCliente() throws Exception{
 
-        var pedidoSalvo = pedidoRepository.save(pedido);
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
 
-        mockMvc.perform(put(PEDIDO_URI+"/"+ pedidoSalvo.getId() +"/realizar"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("dataHora").isNotEmpty())
-                .andExpect(jsonPath("status").value(Status.REALIZADO.name()))
-                .andExpect(jsonPath("itens").isNotEmpty());
+            var pedidoSalvo = pedidoRepository.save(pedido);
 
-        Pedido pedidoCriado = pedidoRepository.findAll().get(0);
-        assertEquals(Status.REALIZADO, pedidoCriado.getStatus());
+            mockMvc.perform(put(PEDIDO_URI+"/"+ pedidoSalvo.getId() +"/realizar"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("id").isNotEmpty())
+                    .andExpect(jsonPath("dataHora").isNotEmpty())
+                    .andExpect(jsonPath("status").value(Status.REALIZADO.name()))
+                    .andExpect(jsonPath("itens").isNotEmpty());
+
+            var pedidoAlterado = pedidoRepository.findAll().get(0);
+            assertEquals(Status.REALIZADO, pedidoAlterado.getStatus());
+        }
+
+        @Test
+        @Transactional
+        public void deve_alterarUmPedidoExistenteParaCanceladoE_devolverDTOParaOCliente() throws Exception{
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+
+            var pedidoSalvo = pedidoRepository.save(pedido);
+
+            mockMvc.perform(put(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/cancelar"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("id").isNotEmpty())
+                    .andExpect(jsonPath("dataHora").isNotEmpty())
+                    .andExpect(jsonPath("status").value(Status.CANCELADO.name()))
+                    .andExpect(jsonPath("itens").isNotEmpty());
+
+            Pedido pedidoCriado = pedidoRepository.findAll().get(0);
+
+            assertAll(
+                    () ->  assertEquals(1, pedidoCriado.getItens().size()),
+                    () -> assertEquals(Status.CANCELADO, pedidoCriado.getStatus())
+            );
+        }
     }
 
-    @Test
-    @Transactional
-    public void deve_lancarExcecaoDeArgumentosInvalidos_e_devolverDTODeErroParaOCliente() throws Exception{
-        var pedidoRequest = new PedidoDTOPost();
-        pedidoRequest.setItens(new ArrayList<>(Arrays.asList(
-                new ItemPedidoDTO(" ", 2),
-                new ItemPedidoDTO("Trakinas", -1)
-        )));
+    @Nested
+    class TestesBuscaDePedido{
+        @Test
+        @Transactional
+        public void deve_buscarUmPedidoComSucesso_e_devolverDTOPedido() throws Exception{
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
 
-        String pedidoRequestJson = objectMapper.writeValueAsString(pedidoRequest);
+            var pedidoSalvo = pedidoRepository.save(pedido);
 
-        mockMvc.perform(post(PEDIDO_URI)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(pedidoRequestJson)
-                )
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP001.getMensagem()))
-                .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP001.getCodigo()))
-                .andExpect(jsonPath("erros").isNotEmpty());
+            mockMvc.perform(get(PEDIDO_URI +"/"+pedidoSalvo.getId()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("id").isNotEmpty())
+                    .andExpect(jsonPath("itens").isNotEmpty());
 
-        int registrosDePedidoNoDatabase = pedidoRepository.findAll().size();
-        assertEquals(0, registrosDePedidoNoDatabase);
+            Pedido pedidoCriado = pedidoRepository.findAll().get(0);
+            assertEquals(1, pedidoCriado.getItens().size());
+        }
+
+        @Test
+        @Transactional
+        public void deve_lancarExcecaoDePedidoInexistente_e_devolverDTODeErroParaOCliente() throws Exception{
+
+            mockMvc.perform(get(PEDIDO_URI +"/"+1L))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP002.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP002.getCodigo()));
+
+            int registrosDePedidoNoDatabase = pedidoRepository.findAll().size();
+            assertEquals(0, registrosDePedidoNoDatabase);
+        }
+
     }
 
-    @Test
-    @Transactional
-    public void deve_buscarUmPedidoComSucesso_e_devolverDTOPedido() throws Exception{
-        var pedido = new Pedido();
-        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
-        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
-        pedido.setStatus(Status.REALIZADO);
 
-        var pedidoSalvo = pedidoRepository.save(pedido);
+    @Nested
+    class TestesDeAlteracaoNosItensDoPedido{
 
-        mockMvc.perform(get(PEDIDO_URI +"/"+pedidoSalvo.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("dataHora").isNotEmpty())
-                .andExpect(jsonPath("itens").isNotEmpty());
+        @Test
+        @Transactional
+        public void deve_adicionarUmItemNoPedidoComSucesso_e_devolverDTOPedido() throws Exception{
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
 
-        List<Pedido> pedidoCriado = pedidoRepository.findAll();
-        assertEquals(1, pedidoCriado.get(0).getItens().size());
-        assertEquals(Status.REALIZADO, pedidoCriado.get(0).getStatus());
+            var pedidoSalvo = pedidoRepository.save(pedido);
+
+            var novoItemPedido = new ItemPedido("Arroz", 4);
+
+            String itemPedidoRequest = objectMapper.writeValueAsString(novoItemPedido);
+
+            mockMvc.perform(post(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/adicionar-item")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(itemPedidoRequest)
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("id").isNotEmpty())
+                    .andExpect(jsonPath("dataHora").isNotEmpty())
+                    .andExpect(jsonPath("itens").isNotEmpty())
+                    .andExpect(jsonPath("itens[1].descricao").value("Arroz"))
+                    .andExpect(jsonPath("itens[1].quantidade").value(4));
+
+            Pedido pedidoAlterado = pedidoRepository.findAll().get(0);
+            ItemPedido novoItemAdicionado = pedidoAlterado.getItens().get(1);
+
+            assertAll(
+                    () -> assertEquals(2, pedidoAlterado.getItens().size()),
+                    () -> assertEquals("Arroz",novoItemAdicionado.getDescricao()),
+                    () -> assertEquals(4,novoItemAdicionado.getQuantidade())
+            );
+        }
+
+        @Test
+        @Transactional
+        public void deve_acrescentarQuantidadeNoItemDoPedido_comSucesso() throws Exception{
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+
+            var pedidoSalvo = pedidoRepository.save(pedido);
+
+            var itemDoPedido = pedidoSalvo.getItens().get(0);
+
+            mockMvc.perform(
+                            put(PEDIDO_URI +"/" +pedidoSalvo.getId()
+                                    +"/itens/" +itemDoPedido.getId() +"/acrescentar/"+3)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("id").isNotEmpty())
+                    .andExpect(jsonPath("dataHora").isNotEmpty())
+                    .andExpect(jsonPath("itens").isNotEmpty())
+                    .andExpect(jsonPath("itens[0].descricao").value("Coca cola"))
+                    .andExpect(jsonPath("itens[0].quantidade").value(5));
+
+
+            var pedidoAtualizado = pedidoRepository.findAll().get(0);
+            var itemDoPedidoAlterado = pedidoAtualizado.getItens().get(0);
+            assertAll(
+                    () -> assertEquals(1, pedidoAtualizado.getItens().size()),
+                    () ->  assertEquals(5, itemDoPedidoAlterado.getQuantidade())
+            );
+        }
+
+        @Test
+        @Transactional
+        public void deve_reduzirQuantidadeNoItemDoPedido_comSucesso() throws Exception{
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+
+            var pedidoSalvo = pedidoRepository.save(pedido);
+            var itemDoPedido = pedidoSalvo.getItens().get(0);
+
+            mockMvc.perform(
+                            put(PEDIDO_URI +"/" +pedidoSalvo.getId()
+                                    +"/itens/" +itemDoPedido.getId() +"/reduzir/"+1)
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("id").isNotEmpty())
+                    .andExpect(jsonPath("dataHora").isNotEmpty())
+                    .andExpect(jsonPath("itens").isNotEmpty())
+                    .andExpect(jsonPath("itens[0].descricao").value("Coca cola"))
+                    .andExpect(jsonPath("itens[0].quantidade").value(1));
+
+
+            Pedido pedidoCriado = pedidoRepository.findAll().get(0);
+            var itemDoPedidoCriado = pedidoCriado.getItens().get(0);
+            assertAll(
+                    () -> assertEquals(1, pedidoCriado.getItens().size()),
+                    () -> assertEquals(1, itemDoPedidoCriado.getQuantidade())
+            );
+        }
+
+        @Test
+        @Transactional
+        public void deve_lancarExcecaoDeQuantidadeInvalida_e_devolverDTODeErroParaOCliente() throws Exception{
+            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+
+            var pedidoSalvo = pedidoRepository.save(pedido);
+            var itemDoPedido = pedidoSalvo.getItens().get(0);
+            var quantidadeInvalida = -2;
+
+            mockMvc.perform(
+                            put(PEDIDO_URI +"/" +pedidoSalvo.getId()
+                                    +"/itens/" +itemDoPedido.getId() +"/reduzir/"+quantidadeInvalida)
+                    )
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP004.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP004.getCodigo()));
+
+            var pedidoDB = pedidoRepository.findAll().get(0);
+            assertEquals(2, pedidoDB.getItens().get(0).getQuantidade());
+        }
+
+        @Test
+        @Transactional
+        public void deve_lancarExcecaoDeItemInexistente_e_devolverDTODeErroParaOCliente() throws Exception{
+            var pedido = PedidoBuilder.umPedido().build();
+            var pedidoSalvo = pedidoRepository.save(pedido);
+
+            mockMvc.perform(
+                            put(PEDIDO_URI +"/" +pedidoSalvo.getId()
+                                    +"/itens/" +1L +"/acrescentar/"+1)
+                    )
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP003.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP003.getCodigo()));
+
+
+            var pedidoSemItens = pedidoRepository.findAll().get(0);
+            assertEquals(0, pedidoSemItens.getItens().size());
+        }
     }
 
-    @Test
-    @Transactional
-    public void deve_lancarExcecaoDePedidoInexistente_e_devolverDTODeErroParaOCliente() throws Exception{
-
-        mockMvc.perform(get(PEDIDO_URI +"/"+1L))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP002.getMensagem()))
-                .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP002.getCodigo()));
-
-        int registrosDePedidoNoDatabase = pedidoRepository.findAll().size();
-        assertEquals(0, registrosDePedidoNoDatabase);
-    }
-
-    @Test
-    @Transactional
-    public void deve_adicionarUmItemNoPedidoComSucesso_e_devolverDTOPedido() throws Exception{
-        var pedido = new Pedido();
-        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
-        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
-        pedido.setStatus(Status.REALIZADO);
-
-        var pedidoSalvo = pedidoRepository.save(pedido);
-
-        var itemPedido = new ItemPedido("Arroz", 4);
-        String itemPedidoRequest = objectMapper.writeValueAsString(itemPedido);
-
-        mockMvc.perform(post(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/adicionar-item")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(itemPedidoRequest)
-                )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("dataHora").isNotEmpty())
-                .andExpect(jsonPath("itens").isNotEmpty())
-                .andExpect(jsonPath("itens[1].descricao").value("Arroz"))
-                .andExpect(jsonPath("itens[1].quantidade").value(4));
-
-        Pedido pedidoCriado = pedidoRepository.findAll().get(0);
-        List<ItemPedido> itens = pedidoCriado.getItens();
-
-        assertEquals(2, pedidoCriado.getItens().size());
-        assertEquals(Status.REALIZADO, pedidoCriado.getStatus());
-        assertEquals("Arroz",itens.get(1).getDescricao());
-        assertEquals(4,itens.get(1).getQuantidade());
-    }
-
-    @Test
-    @Transactional
-    public void deve_lancarExcecaoDeItemInexistente_e_devolverDTODeErroParaOCliente() throws Exception{
-        var pedido = new Pedido();
-        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
-        pedido.setStatus(Status.CONFIRMADO);
-
-        var pedidoSalvo = pedidoRepository.save(pedido);
-
-        mockMvc.perform(
-                        put(PEDIDO_URI +"/" +pedidoSalvo.getId()
-                                +"/itens/" +2L +"/acrescentar/"+1)
-                )
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP003.getMensagem()))
-                .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP003.getCodigo()));
-
-
-        var pedidoDB = pedidoRepository.findAll().get(0);
-        assertEquals(0, pedidoDB.getItens().size());
-    }
-
-    @Test
-    @Transactional
-    public void deve_cancelarUmPedido_comSucesso() throws Exception{
-        var pedido = new Pedido();
-        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
-        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
-        pedido.setStatus(Status.CONFIRMADO);
-
-        var pedidoSalvo = pedidoRepository.save(pedido);
-
-        mockMvc.perform(put(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/cancelar"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("dataHora").isNotEmpty())
-                .andExpect(jsonPath("status").value(Status.CANCELADO.name()))
-                .andExpect(jsonPath("itens").isNotEmpty());
-
-        List<Pedido> pedidoCriado = pedidoRepository.findAll();
-        assertEquals(1, pedidoCriado.get(0).getItens().size());
-        assertEquals(Status.CANCELADO, pedidoCriado.get(0).getStatus());
-    }
-
-    @Test
-    @Transactional
-    public void deve_acrescentarQuantidadeNoItemDoPedido_comSucesso() throws Exception{
-        var pedido = new Pedido();
-        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
-        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
-        pedido.setStatus(Status.CONFIRMADO);
-
-        var pedidoSalvo = pedidoRepository.save(pedido);
-        var itemDoPedido = pedidoSalvo.getItens().get(0);
-
-        mockMvc.perform(
-                put(PEDIDO_URI +"/" +pedidoSalvo.getId()
-                        +"/itens/" +itemDoPedido.getId() +"/acrescentar/"+3)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("dataHora").isNotEmpty())
-                .andExpect(jsonPath("itens").isNotEmpty())
-                .andExpect(jsonPath("itens[0].descricao").value("Coca-cola"))
-                .andExpect(jsonPath("itens[0].quantidade").value(5));
-
-
-        Pedido pedidoCriado = pedidoRepository.findAll().get(0);
-        var itemDoPedidoCriado = pedidoCriado.getItens().get(0);
-        assertEquals(1, pedidoCriado.getItens().size());
-        assertEquals(5, itemDoPedidoCriado.getQuantidade());
-        assertEquals(Status.CONFIRMADO, pedidoCriado.getStatus());
-    }
-
-    @Test
-    @Transactional
-    public void deve_reduzirQuantidadeNoItemDoPedido_comSucesso() throws Exception{
-        var pedido = new Pedido();
-        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
-        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
-        pedido.setStatus(Status.CONFIRMADO);
-
-        var pedidoSalvo = pedidoRepository.save(pedido);
-        var itemDoPedido = pedidoSalvo.getItens().get(0);
-
-        mockMvc.perform(
-                        put(PEDIDO_URI +"/" +pedidoSalvo.getId()
-                                +"/itens/" +itemDoPedido.getId() +"/reduzir/"+1)
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("dataHora").isNotEmpty())
-                .andExpect(jsonPath("itens").isNotEmpty())
-                .andExpect(jsonPath("itens[0].descricao").value("Coca-cola"))
-                .andExpect(jsonPath("itens[0].quantidade").value(1));
-
-
-        Pedido pedidoCriado = pedidoRepository.findAll().get(0);
-        var itemDoPedidoCriado = pedidoCriado.getItens().get(0);
-        assertEquals(1, pedidoCriado.getItens().size());
-        assertEquals(1, itemDoPedidoCriado.getQuantidade());
-        assertEquals(Status.CONFIRMADO, pedidoCriado.getStatus());
-    }
-
-    @Test
-    @Transactional
-    public void deve_lancarExcecaoDeQuantidadeInvalida_e_devolverDTODeErroParaOCliente() throws Exception{
-        var pedido = new Pedido();
-        pedido.setItens(new ArrayList<>(List.of(new ItemPedido("Coca-cola", 2))));
-        pedido.setDataHora(LocalDateTime.of(LocalDate.of(2022,1,3), LocalTime.now()));
-        pedido.setStatus(Status.CONFIRMADO);
-
-        var pedidoSalvo = pedidoRepository.save(pedido);
-        var itemDoPedido = pedidoSalvo.getItens().get(0);
-        var quantidadeInvalida = -2;
-
-        mockMvc.perform(
-                        put(PEDIDO_URI +"/" +pedidoSalvo.getId()
-                                +"/itens/" +itemDoPedido.getId() +"/reduzir/"+quantidadeInvalida)
-                )
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP004.getMensagem()))
-                .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP004.getCodigo()));
-
-
-        var pedidoDB = pedidoRepository.findAll().get(0);
-        assertEquals(2, pedidoDB.getItens().get(0).getQuantidade());
-    }
 }

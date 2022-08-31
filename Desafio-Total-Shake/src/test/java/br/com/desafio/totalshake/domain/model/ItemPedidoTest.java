@@ -1,6 +1,7 @@
 package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.errors.exceptions.QuantidadeInvalidaException;
+import br.com.desafio.totalshake.builders.PedidoBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -59,6 +60,24 @@ public class ItemPedidoTest {
                         () -> itemPedido.reduzirQuantidadeItem(-3)
                 )
         );
+    }
+
+    @Test
+    public void deve_testar_equals_quandoItemPedidoTiver_mesmaDescricao_estarNoMesmoPedido(){
+        Pedido pedido = PedidoBuilder.umPedido().build();
+        ItemPedido itemPedido = new ItemPedido("Coca",2);
+        itemPedido.setPedido(pedido);
+        ItemPedido mesmoItemPedido = new ItemPedido("Coca",3);
+        mesmoItemPedido.setPedido(pedido);
+
+        assertEquals(itemPedido, mesmoItemPedido);
+    }
+
+    @Test
+    public void deve_testar_equals_casoNull(){
+        ItemPedido itemPedido = new ItemPedido("Coca",2);
+
+        assertFalse(itemPedido == null);
     }
 
 }

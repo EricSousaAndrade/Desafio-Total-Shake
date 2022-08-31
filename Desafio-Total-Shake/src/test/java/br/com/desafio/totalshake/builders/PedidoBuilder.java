@@ -1,10 +1,10 @@
-package br.com.desafio.totalshake.builds;
+package br.com.desafio.totalshake.builders;
 
 import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class PedidoBuilder {
@@ -19,6 +19,7 @@ public class PedidoBuilder {
         var pedidoBuilder = new PedidoBuilder();
         pedidoBuilder.pedido = new Pedido();
         pedidoBuilder.pedido.setId(1L);
+        pedidoBuilder.pedido.setDataHora(LocalDateTime.now());
 
         return pedidoBuilder;
     }

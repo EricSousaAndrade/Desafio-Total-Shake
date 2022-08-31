@@ -1,7 +1,7 @@
 package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.errors.exceptions.ItemInexistenteException;
-import br.com.desafio.totalshake.builds.PedidoBuilder;
+import br.com.desafio.totalshake.builders.PedidoBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -75,6 +75,21 @@ public class PedidoTest {
         Pedido pedido = new Pedido();
 
         assertThrows(ItemInexistenteException.class, () -> pedido.reduzirItemDoPedido(1L, 20));
+    }
+
+    @Test
+    public void deve_testar_equals_quandoPedidoTiverMesmoID(){
+        Pedido pedidoComId1 = PedidoBuilder.umPedido().build();
+        Pedido outroPedidoComId1 = PedidoBuilder.umPedido().build();
+
+        assertEquals(pedidoComId1, outroPedidoComId1);
+    }
+
+    @Test
+    public void deve_testar_equals_casoNull(){
+        Pedido pedidoComId1 = PedidoBuilder.umPedido().build();
+
+        assertFalse(pedidoComId1 == null);
     }
 
 }

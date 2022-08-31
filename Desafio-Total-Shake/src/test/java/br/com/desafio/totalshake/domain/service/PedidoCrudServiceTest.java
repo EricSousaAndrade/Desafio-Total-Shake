@@ -3,7 +3,7 @@ package br.com.desafio.totalshake.domain.service;
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.errors.exceptions.PedidoInexistenteException;
-import br.com.desafio.totalshake.builds.PedidoBuilder;
+import br.com.desafio.totalshake.builders.PedidoBuilder;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
@@ -38,7 +38,7 @@ public class PedidoCrudServiceTest {
     }
 
     @Nested
-    class testesDeAcoesDoPedido{
+    class TestesDeAcoesDoPedido{
 
         @Test
         public void deve_salvarOPedidoESeusItensE_setarStatusComoCriado_aoSalvarUmPedido(){
@@ -148,7 +148,7 @@ public class PedidoCrudServiceTest {
     }
 
     @Nested
-    class testesDeAcoesDoItemPedido{
+    class TestesDeAcoesDoItemPedido{
 
         @Test
         public void deve_incrementarAQuantidadeDeUm_itemPedido_corretamente(){

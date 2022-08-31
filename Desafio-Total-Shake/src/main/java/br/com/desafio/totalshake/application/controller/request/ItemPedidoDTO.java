@@ -4,14 +4,12 @@ import br.com.desafio.totalshake.domain.model.ItemPedido;
 
 import javax.validation.constraints.*;
 
-public class ItemPedidoDTO {
-
-    @NotNull @NotBlank
-    @Size(min = 3, max = 120)
-    private String descricao;
-
-    @Positive @NotNull
-    private Integer quantidade;
+public record ItemPedidoDTO(
+        @NotNull @NotBlank @Size(min = 3, max = 120)
+        String descricao,
+        @Positive @NotNull
+        Integer quantidade
+) {
 
     public ItemPedidoDTO(String descricao, Integer quantidade) {
         this.descricao = descricao;
@@ -26,19 +24,13 @@ public class ItemPedidoDTO {
         return itemPedido;
     }
 
-    public String getDescricao() {
+    @Override
+    public String descricao() {
         return descricao;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public Integer getQuantidade() {
+    @Override
+    public Integer quantidade() {
         return quantidade;
-    }
-
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
     }
 }
