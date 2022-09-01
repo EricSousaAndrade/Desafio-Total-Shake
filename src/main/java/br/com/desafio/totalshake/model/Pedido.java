@@ -18,12 +18,12 @@ public class Pedido implements Serializable {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Long id;
 
-    private LocalDateTime dataHora;
+    private LocalDateTime dataHora = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @OneToMany
+    @OneToMany(mappedBy = "pedido", fetch = FetchType.EAGER, cascade=CascadeType.ALL)
     private List<ItemPedido> itensPedidosList;
 
 }

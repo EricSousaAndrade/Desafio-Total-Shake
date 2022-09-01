@@ -5,13 +5,14 @@ import br.com.desafio.totalshake.exception.NaoEncontradoException;
 import br.com.desafio.totalshake.exception.ParametroInvalidoException;
 import br.com.desafio.totalshake.model.Pedido;
 import br.com.desafio.totalshake.repository.PedidoRepository;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,8 @@ public class PedidoService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidoService.class);
 
+    ModelMapper modelMapper = new ModelMapper();
+
     @Transactional
     public void salvarPedido(PedidoDto pedidoDto) throws Exception {
 
@@ -30,8 +33,10 @@ public class PedidoService {
 
         if (pedidoDto.getStatus() != null) {
 
-            Pedido pedidoModel = converterPedidoParaModel(pedidoDto);
+            Pedido pedidoModel = modelMapper.map(pedidoDto, Pedido.class);
             repository.save(pedidoModel);
+
+            LOGGER.info("Pedido salvo com sucesso.");
         } else {
 
             LOGGER.info("Parâmetro inválido.");
@@ -45,9 +50,10 @@ public class PedidoService {
 
         try {
 
-            Pedido pedido = converterPedidoParaModel(pedidoDto);
+            Pedido pedido = modelMapper.map(pedidoDto, Pedido.class);
 
-            repository.deleteById(idPedido);
+            pedido.setId(idPedido);
+
             repository.save(pedido);
 
             LOGGER.info("Pedido de id {} atualizado com sucesso.", idPedido);
@@ -67,7 +73,12 @@ public class PedidoService {
 
             pedidoModel = repository.findAll();
 
-            return converterListaPedidoParaDto(pedidoModel);
+            List<PedidoDto> listaPedidos =
+                    modelMapper.map(pedidoModel, new TypeToken<List<PedidoDto>>() {}.getType());
+
+            LOGGER.info("Pedidos encontrados com sucesso.");
+
+            return listaPedidos;
 
         } else {
 
@@ -84,7 +95,7 @@ public class PedidoService {
         if (!repository.findById(idPedido).isEmpty()) {
 
             Optional<Pedido> pedidoModel = repository.findById(idPedido);
-            pedido = converterPedidoParaDto(pedidoModel);
+            pedido = modelMapper.map(pedidoModel, PedidoDto.class);
             LOGGER.info("Pedido de id {} encontrado com sucesso.", idPedido);
         } else {
             LOGGER.warn("Pedido não encontrado");
@@ -99,8 +110,6 @@ public class PedidoService {
 
         Optional<Pedido> pedido = repository.findById(idPedido);
 
-        //implementar exceções
-
         if (pedido.isPresent()) {
 
             repository.deleteById(idPedido);
@@ -112,46 +121,6 @@ public class PedidoService {
 
         }
 
-    }
-
-    private Pedido converterPedidoParaModel(PedidoDto pedidoDto) {
-
-        Pedido pedidoModel = new Pedido();
-
-        pedidoModel.setItensPedidosList(pedidoDto.getItensPedidosList());
-        pedidoModel.setStatus(pedidoDto.getStatus());
-        pedidoModel.setDataHora(pedidoDto.getDataHora());
-
-        return pedidoModel;
-    }
-
-    private PedidoDto converterPedidoParaDto(Optional<Pedido> pedidoModel) {
-
-        PedidoDto pedidoDto = new PedidoDto();
-
-        pedidoDto.setDataHora(pedidoModel.get().getDataHora());
-        pedidoDto.setItensPedidosList(pedidoModel.get().getItensPedidosList());
-        pedidoDto.setStatus(pedidoModel.get().getStatus());
-
-        return pedidoDto;
-    }
-
-    private List<PedidoDto> converterListaPedidoParaDto(List<Pedido> pedidosModel) {
-
-        List<PedidoDto> pedidoDto = new ArrayList<>();
-
-        pedidosModel.forEach(pedido -> {
-            PedidoDto dto = new PedidoDto();
-
-            dto.setDataHora(pedido.getDataHora());
-            dto.setItensPedidosList(pedido.getItensPedidosList());
-            dto.setStatus(pedido.getStatus());
-
-            pedidoDto.add(dto);
-
-        });
-
-        return pedidoDto;
     }
 
 }

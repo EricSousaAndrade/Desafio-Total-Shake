@@ -19,7 +19,7 @@ public class ItemPedido implements Serializable {
 
     private String descricao;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER, cascade=CascadeType.ALL)
     private Pedido pedido;
 
 }

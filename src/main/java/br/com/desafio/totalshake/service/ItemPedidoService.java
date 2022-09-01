@@ -5,13 +5,15 @@ import br.com.desafio.totalshake.exception.NaoEncontradoException;
 import br.com.desafio.totalshake.exception.ParametroInvalidoException;
 import br.com.desafio.totalshake.model.ItemPedido;
 import br.com.desafio.totalshake.repository.ItemPedidoRepository;
+import br.com.desafio.totalshake.repository.PedidoRepository;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,49 +24,53 @@ public class ItemPedidoService {
     private ItemPedidoRepository repository;
 
     @Autowired
-    private PedidoService pedidoService;
+    private PedidoRepository pedidoRepository;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ItemPedidoService.class);
 
-//    @Transactional
-//    public void salvarItemPedido(ItemPedidoDto itemPedidoDto) throws Exception {
-//
-//        LOGGER.info("Salvando itemPedido.");
-//
-//        if (itemPedidoDto != null) {
-//
-//            ItemPedido itemPedidoModel = converterItemPedidoParaModel(itemPedidoDto);
-//            repository.save(itemPedidoModel);
-//
-//            LOGGER.info("itemPedido salvo com sucesso.");
-//        } else {
-//
-//            LOGGER.info("Parâmetro inválido.");
-//            throw new ParametroInvalidoException("Parâmetro inválido.");
-//        }
-//
-//    }
+    ModelMapper modelMapper = new ModelMapper();
 
-//    @Transactional
-//    public void atualizarItemPedido(Long idItemPedido, ItemPedidoDto itemPedidoDto) {
-//
-//        try {
-//
-//            ItemPedido itemPedido = converterItemPedidoParaModel(itemPedidoDto);
-//
-//            repository.deleteById(idItemPedido);
-//            repository.save(itemPedido);
-//
-//            LOGGER.info("Pedido de id {} atualizado com sucesso.", idItemPedido);
-//
-//        } catch (Exception e) {
-//
-//            LOGGER.warn("Não foi possível atualizar o itemPedido de id {} .", idItemPedido);
-//        }
-//
-//    }
+    @Transactional
+    public void salvarItemPedido(ItemPedidoDto itemPedidoDto) throws Exception {
 
-    public List<ItemPedidoDto> getAllItensPedidos() throws NaoEncontradoException {
+        LOGGER.info("Salvando itemPedido.");
+
+        if (itemPedidoDto != null) {
+
+            ItemPedido itemPedidoModel = modelMapper.map(itemPedidoDto, ItemPedido.class);
+
+            repository.save(itemPedidoModel);
+
+            LOGGER.info("itemPedido salvo com sucesso.");
+        } else {
+
+            LOGGER.info("Parâmetro inválido.");
+            throw new ParametroInvalidoException("Parâmetro inválido.");
+        }
+
+    }
+
+    @Transactional
+    public void atualizarItemPedido(Long idItemPedido, ItemPedidoDto itemPedidoDto) {
+
+        try {
+
+            ItemPedido itemPedido = modelMapper.map(itemPedidoDto, ItemPedido.class);
+
+            itemPedido.setId(idItemPedido);
+
+            repository.save(itemPedido);
+
+            LOGGER.info("Pedido de id {} atualizado com sucesso.", idItemPedido);
+
+        } catch (Exception e) {
+
+            LOGGER.warn("Não foi possível atualizar o itemPedido de id {} .", idItemPedido);
+        }
+
+    }
+
+    public List<ItemPedidoDto> findAllItensPedidos() throws NaoEncontradoException {
 
         List<ItemPedido> itemPedidoModel;
 
@@ -72,7 +78,13 @@ public class ItemPedidoService {
 
             itemPedidoModel = repository.findAll();
 
-            return converterListaItemPedidoParaDto(itemPedidoModel);
+
+            List<ItemPedidoDto> listaItensPedidos =
+                    modelMapper.map(itemPedidoModel, new TypeToken<List<ItemPedidoDto>>() {}.getType());
+
+            LOGGER.info("Itens Pedidos encontrados com sucesso.");
+
+            return listaItensPedidos;
 
         } else {
 
@@ -82,14 +94,16 @@ public class ItemPedidoService {
 
     }
 
-    public ItemPedidoDto getItemPedidoById(Long idItemPedido) throws NaoEncontradoException {
+    public ItemPedidoDto findItemPedidoById(Long idItemPedido) throws NaoEncontradoException {
 
         ItemPedidoDto itemPedido;
 
         if (!repository.findById(idItemPedido).isEmpty()) {
 
             Optional<ItemPedido> itemPedidoModel = repository.findById(idItemPedido);
-            itemPedido = converterItemPedidoParaDto(itemPedidoModel);
+
+
+            itemPedido = modelMapper.map(itemPedidoModel, ItemPedidoDto.class);
             LOGGER.info("Item Pedido de id {} encontrado com sucesso.", idItemPedido);
         } else {
             LOGGER.warn("Item Pedido não encontrado");
@@ -104,8 +118,6 @@ public class ItemPedidoService {
 
         Optional<ItemPedido> itemPedido = repository.findById(idItemPedido);
 
-        //implementar exceções
-
         if (itemPedido.isPresent()) {
 
             repository.deleteById(idItemPedido);
@@ -116,46 +128,6 @@ public class ItemPedidoService {
             LOGGER.warn("Item Pedido não encontrado.");
         }
 
-    }
-
-    private ItemPedido converterItemPedidoParaModel(ItemPedidoDto itemPedidoDto) {
-
-        ItemPedido itemPedidoModel = new ItemPedido();
-
-        itemPedidoModel.setPedido(itemPedidoDto.getPedido());
-        itemPedidoModel.setDescricao(itemPedidoDto.getDescricao());
-        itemPedidoModel.setQuantidade(itemPedidoDto.getQuantidade());
-
-        return itemPedidoModel;
-    }
-
-    private ItemPedidoDto converterItemPedidoParaDto(Optional<ItemPedido> itemPedidoModel) {
-
-        ItemPedidoDto itemPedidoDto = new ItemPedidoDto();
-
-        itemPedidoDto.setDescricao(itemPedidoModel.get().getDescricao());
-        itemPedidoDto.setPedido(itemPedidoModel.get().getPedido());
-        itemPedidoDto.setQuantidade(itemPedidoModel.get().getQuantidade());
-
-        return itemPedidoDto;
-    }
-
-    private List<ItemPedidoDto> converterListaItemPedidoParaDto(List<ItemPedido> itensPedidosModel) {
-
-        List<ItemPedidoDto> itemPedidoDto = new ArrayList<>();
-
-        itemPedidoDto.forEach(itemPedido -> {
-            ItemPedidoDto dto = new ItemPedidoDto();
-
-            dto.setPedido(itemPedido.getPedido());
-            dto.setQuantidade(itemPedido.getQuantidade());
-            dto.setDescricao(itemPedido.getDescricao());
-
-            itemPedidoDto.add(dto);
-
-        });
-
-        return itemPedidoDto;
     }
 
 }

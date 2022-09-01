@@ -18,28 +18,28 @@ public class ItemPedidoController {
     @Autowired
     ItemPedidoService service;
 
-//    @PostMapping()
-//    public ResponseEntity<ItemPedido> postItemPedido(@RequestBody ItemPedidoDto itemPedidoDto) throws Exception {
-//
-//        try{
-//            service.salvarItemPedido(itemPedidoDto);
-//            return ResponseEntity.ok().build();
-//
-//        } catch (ParametroInvalidoException e){
-//
-//            return ResponseEntity.badRequest().build();
-//        }
-//
-//    }
-//
-//    @PutMapping("/{idItemPedido}")
-//    public ResponseEntity putItemPedido(@PathVariable Long idItemPedido, @RequestBody ItemPedidoDto itemPedidoDto) {
-//
-//        service.atualizarItemPedido(idItemPedido, itemPedidoDto);
-//
-//        return ResponseEntity.ok().build();
-//
-//    }
+    @PostMapping()
+    public ResponseEntity<ItemPedido> postItemPedido(@RequestBody ItemPedidoDto itemPedidoDto) throws Exception {
+
+        try{
+            service.salvarItemPedido(itemPedidoDto);
+            return ResponseEntity.ok().build();
+
+        } catch (ParametroInvalidoException e){
+
+            return ResponseEntity.badRequest().build();
+        }
+
+    }
+
+    @PutMapping("/{idItemPedido}")
+    public ResponseEntity putItemPedido(@PathVariable Long idItemPedido, @RequestBody ItemPedidoDto itemPedidoDto) {
+
+        service.atualizarItemPedido(idItemPedido, itemPedidoDto);
+
+        return ResponseEntity.ok().build();
+
+    }
 
     @GetMapping
     public ResponseEntity<List<ItemPedidoDto>> findAllItensPedidos() {
@@ -47,7 +47,7 @@ public class ItemPedidoController {
         //implementar Pageable
 
         try {
-            List<ItemPedidoDto> itensPedidos = service.getAllItensPedidos();
+            List<ItemPedidoDto> itensPedidos = service.findAllItensPedidos();
             return ResponseEntity.ok(itensPedidos);
 
         } catch (NaoEncontradoException e) {
@@ -62,7 +62,7 @@ public class ItemPedidoController {
         ItemPedidoDto itemPedido;
 
         try {
-            itemPedido = service.getItemPedidoById(idItemPedido);
+            itemPedido = service.findItemPedidoById(idItemPedido);
             return ResponseEntity.ok(itemPedido);
         } catch (NaoEncontradoException e) {
 
@@ -71,7 +71,7 @@ public class ItemPedidoController {
 
     }
 
-    @DeleteMapping("/{idPedido}")
+    @DeleteMapping("/delete/{idItemPedido}")
     public ResponseEntity deletePedido(@PathVariable Long idItemPedido) {
 
         service.deleteItemPedido(idItemPedido);

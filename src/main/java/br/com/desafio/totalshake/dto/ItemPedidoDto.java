@@ -1,6 +1,5 @@
 package br.com.desafio.totalshake.dto;
 
-import br.com.desafio.totalshake.model.Pedido;
 import lombok.Data;
 
 import javax.validation.Valid;
@@ -18,6 +17,6 @@ public class ItemPedidoDto implements Serializable {
     private String descricao;
 
     @Valid
-    private Pedido pedido;
+    private PedidoDto pedido;
 
 }
