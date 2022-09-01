@@ -1,24 +1,24 @@
-package br.com.desafio.totalshake.impl;
+package br.com.desafio.totalshake.domain.service.state.impl;
 
 import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
 import br.com.desafio.totalshake.application.errors.exceptions.StatusInvalidoException;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
-import br.com.desafio.totalshake.domain.service.EstadoPedido;
+import br.com.desafio.totalshake.domain.service.state.EstadoPedido;
 
-public class ConfirmadoImpl implements EstadoPedido {
+public class SaiuParaEntregaImpl implements EstadoPedido {
 
     private final Pedido pedido;
-    private final Status confirmado = Status.CONFIRMADO;
+    private final Status saiuParaEntrega = Status.SAIU_PARA_ENTREGA;
 
-    public ConfirmadoImpl(Pedido pedido) {
+    public SaiuParaEntregaImpl(Pedido pedido) {
         this.pedido = pedido;
-        this.pedido.setStatus(confirmado);
+        this.pedido.setStatus(saiuParaEntrega);
     }
 
     @Override
-    public void pedidoPronto() {
-        this.pedido.setEstadoPedido(new ProntoImpl(this.pedido));
+    public void pedidoEntregue() {
+        this.pedido.setEstadoPedido(new EntregueImpl(this.pedido));
     }
 
     @Override
@@ -26,7 +26,7 @@ public class ConfirmadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                confirmado
+                saiuParaEntrega
         );
     }
 
@@ -35,7 +35,7 @@ public class ConfirmadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                confirmado
+                saiuParaEntrega
         );
     }
 
@@ -44,7 +44,7 @@ public class ConfirmadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                confirmado
+                saiuParaEntrega
         );
     }
 
@@ -53,26 +53,25 @@ public class ConfirmadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                confirmado
+                saiuParaEntrega
         );
     }
 
+    @Override
+    public void pedidoPronto() {
+        throw new StatusInvalidoException(
+                CodInternoErroApi.AP301.getMensagem(),
+                CodInternoErroApi.AP301.getCodigo(),
+                saiuParaEntrega
+        );
+    }
 
     @Override
     public void pedidoSaiuParaEntrega() {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                confirmado
-        );
-    }
-
-    @Override
-    public void pedidoEntregue() {
-        throw new StatusInvalidoException(
-                CodInternoErroApi.AP301.getMensagem(),
-                CodInternoErroApi.AP301.getCodigo(),
-                confirmado
+                saiuParaEntrega
         );
     }
 
@@ -81,7 +80,7 @@ public class ConfirmadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                confirmado
+                saiuParaEntrega
         );
     }
 }

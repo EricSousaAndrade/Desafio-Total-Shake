@@ -1,29 +1,29 @@
-package br.com.desafio.totalshake.impl;
+package br.com.desafio.totalshake.domain.service.state.impl;
 
 import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
 import br.com.desafio.totalshake.application.errors.exceptions.StatusInvalidoException;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
-import br.com.desafio.totalshake.domain.service.EstadoPedido;
+import br.com.desafio.totalshake.domain.service.state.EstadoPedido;
 
-public class CanceladoImpl implements EstadoPedido {
+public class CriadoImpl implements EstadoPedido {
 
-    private Pedido pedido;
-    private final Status cancelado = Status.CANCELADO;
+    private final Pedido pedido;
+    private final Status criado = Status.CRIADO;
 
-
-    public CanceladoImpl(Pedido pedido) {
+    public CriadoImpl(Pedido pedido) {
         this.pedido = pedido;
-        this.pedido.setStatus(cancelado);
+        this.pedido.setStatus(criado);
     }
 
     @Override
     public void realizarPedido() {
-        throw new StatusInvalidoException(
-                CodInternoErroApi.AP301.getMensagem(),
-                CodInternoErroApi.AP301.getCodigo(),
-                cancelado
-        );
+        this.pedido.setEstadoPedido(new RealizadoImpl(this.pedido));
+    }
+
+    @Override
+    public void cancelarPedido() {
+        this.pedido.setEstadoPedido(new CanceladoImpl(this.pedido));
     }
 
     @Override
@@ -31,7 +31,7 @@ public class CanceladoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                cancelado
+                criado
         );
     }
 
@@ -40,16 +40,7 @@ public class CanceladoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                cancelado
-        );
-    }
-
-    @Override
-    public void cancelarPedido() {
-        throw new StatusInvalidoException(
-                CodInternoErroApi.AP301.getMensagem(),
-                CodInternoErroApi.AP301.getCodigo(),
-                cancelado
+                criado
         );
     }
 
@@ -58,7 +49,7 @@ public class CanceladoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                cancelado
+                criado
         );
     }
 
@@ -67,7 +58,7 @@ public class CanceladoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                cancelado
+                criado
         );
     }
 
@@ -76,7 +67,7 @@ public class CanceladoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                cancelado
+                criado
         );
     }
 
@@ -85,7 +76,7 @@ public class CanceladoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                cancelado
+                criado
         );
     }
 }

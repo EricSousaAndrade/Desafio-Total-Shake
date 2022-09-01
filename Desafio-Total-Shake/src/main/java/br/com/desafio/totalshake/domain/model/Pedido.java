@@ -2,8 +2,8 @@ package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.errors.exceptions.ItemInexistenteException;
 import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
-import br.com.desafio.totalshake.domain.service.EstadoPedido;
-import br.com.desafio.totalshake.impl.EstadoPedidoFactory;
+import br.com.desafio.totalshake.domain.service.state.EstadoPedido;
+import br.com.desafio.totalshake.domain.service.state.EstadoPedidoFactory;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

@@ -1,8 +1,10 @@
-package br.com.desafio.totalshake.impl;
+package br.com.desafio.totalshake.domain.service.state;
 
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
-import br.com.desafio.totalshake.domain.service.EstadoPedido;
+import br.com.desafio.totalshake.domain.service.state.EstadoPedido;
+import br.com.desafio.totalshake.domain.service.state.EstadoPedidoFactory;
+import br.com.desafio.totalshake.domain.service.state.impl.*;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

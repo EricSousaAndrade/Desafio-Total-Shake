@@ -1,33 +1,27 @@
-package br.com.desafio.totalshake.impl;
+package br.com.desafio.totalshake.domain.service.state.impl;
 
 import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
 import br.com.desafio.totalshake.application.errors.exceptions.StatusInvalidoException;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
-import br.com.desafio.totalshake.domain.service.EstadoPedido;
+import br.com.desafio.totalshake.domain.service.state.EstadoPedido;
 
-public class ProntoImpl implements EstadoPedido {
+public class EntregueImpl implements EstadoPedido {
 
-    private final Pedido pedido;
-    private final Status pronto = Status.PRONTO;
+    private Pedido pedido;
+    private final Status entregue = Status.ENTREGUE;
 
-    public ProntoImpl(Pedido pedido) {
+    public EntregueImpl(Pedido pedido) {
         this.pedido = pedido;
-        this.pedido.setStatus(pronto);
+        this.pedido.setStatus(entregue);
     }
-
-    @Override
-    public void pedidoSaiuParaEntrega() {
-        this.pedido.setEstadoPedido(new SaiuParaEntregaImpl(this.pedido));
-    }
-
 
     @Override
     public void realizarPedido() {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                pronto
+                entregue
         );
     }
 
@@ -36,7 +30,7 @@ public class ProntoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                pronto
+                entregue
         );
     }
 
@@ -45,7 +39,7 @@ public class ProntoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                pronto
+                entregue
         );
     }
 
@@ -54,7 +48,7 @@ public class ProntoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                pronto
+                entregue
         );
     }
 
@@ -63,7 +57,16 @@ public class ProntoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                pronto
+                entregue
+        );
+    }
+
+    @Override
+    public void pedidoSaiuParaEntrega() {
+        throw new StatusInvalidoException(
+                CodInternoErroApi.AP301.getMensagem(),
+                CodInternoErroApi.AP301.getCodigo(),
+                entregue
         );
     }
 
@@ -72,7 +75,7 @@ public class ProntoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                pronto
+                entregue
         );
     }
 
@@ -81,7 +84,7 @@ public class ProntoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                pronto
+                entregue
         );
     }
 }

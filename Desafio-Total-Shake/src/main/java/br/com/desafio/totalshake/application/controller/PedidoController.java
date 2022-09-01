@@ -3,7 +3,7 @@ package br.com.desafio.totalshake.application.controller;
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
 import br.com.desafio.totalshake.application.controller.response.PedidoDTOResponse;
-import br.com.desafio.totalshake.domain.service.PedidoCrudService;
+import br.com.desafio.totalshake.domain.service.crud.PedidoCrudService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

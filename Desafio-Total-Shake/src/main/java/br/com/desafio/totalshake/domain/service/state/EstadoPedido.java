@@ -1,4 +1,4 @@
-package br.com.desafio.totalshake.domain.service;
+package br.com.desafio.totalshake.domain.service.state;
 
 public interface EstadoPedido {
 

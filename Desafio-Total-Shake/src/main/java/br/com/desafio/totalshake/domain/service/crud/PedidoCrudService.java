@@ -1,4 +1,4 @@
-package br.com.desafio.totalshake.domain.service;
+package br.com.desafio.totalshake.domain.service.crud;
 
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;

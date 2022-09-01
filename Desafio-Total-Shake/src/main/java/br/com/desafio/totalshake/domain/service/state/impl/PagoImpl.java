@@ -1,19 +1,29 @@
-package br.com.desafio.totalshake.impl;
+package br.com.desafio.totalshake.domain.service.state.impl;
 
 import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
 import br.com.desafio.totalshake.application.errors.exceptions.StatusInvalidoException;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
-import br.com.desafio.totalshake.domain.service.EstadoPedido;
+import br.com.desafio.totalshake.domain.service.state.EstadoPedido;
 
-public class NaoAutorizadoImpl implements EstadoPedido {
+public class PagoImpl implements EstadoPedido {
 
     private Pedido pedido;
-    private final Status naoAutorizado = Status.NAO_AUTORIZADO;
+    private final Status pago = Status.PAGO;
 
-    public NaoAutorizadoImpl(Pedido pedido) {
+    public PagoImpl(Pedido pedido) {
         this.pedido = pedido;
-        this.pedido.setStatus(naoAutorizado);
+        this.pedido.setStatus(pago);
+    }
+
+    @Override
+    public void confirmarPedido() {
+        this.pedido.setEstadoPedido(new ConfirmadoImpl(this.pedido));
+    }
+
+    @Override
+    public void naoAutorizarPedido() {
+        this.pedido.setEstadoPedido(new NaoAutorizadoImpl(this.pedido));
     }
 
     @Override
@@ -21,7 +31,7 @@ public class NaoAutorizadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                naoAutorizado
+                pago
         );
     }
 
@@ -30,16 +40,7 @@ public class NaoAutorizadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                naoAutorizado
-        );
-    }
-
-    @Override
-    public void confirmarPedido() {
-        throw new StatusInvalidoException(
-                CodInternoErroApi.AP301.getMensagem(),
-                CodInternoErroApi.AP301.getCodigo(),
-                naoAutorizado
+                pago
         );
     }
 
@@ -48,7 +49,7 @@ public class NaoAutorizadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                naoAutorizado
+                pago
         );
     }
 
@@ -57,7 +58,7 @@ public class NaoAutorizadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                naoAutorizado
+                pago
         );
     }
 
@@ -66,7 +67,7 @@ public class NaoAutorizadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                naoAutorizado
+                pago
         );
     }
 
@@ -75,16 +76,7 @@ public class NaoAutorizadoImpl implements EstadoPedido {
         throw new StatusInvalidoException(
                 CodInternoErroApi.AP301.getMensagem(),
                 CodInternoErroApi.AP301.getCodigo(),
-                naoAutorizado
-        );
-    }
-
-    @Override
-    public void naoAutorizarPedido() {
-        throw new StatusInvalidoException(
-                CodInternoErroApi.AP301.getMensagem(),
-                CodInternoErroApi.AP301.getCodigo(),
-                naoAutorizado
+                pago
         );
     }
 }

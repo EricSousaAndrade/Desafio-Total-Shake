@@ -2,8 +2,8 @@ package br.com.desafio.totalshake.builders;
 
 import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
-import br.com.desafio.totalshake.impl.CriadoImpl;
-import br.com.desafio.totalshake.impl.PagoImpl;
+import br.com.desafio.totalshake.domain.service.state.impl.CriadoImpl;
+import br.com.desafio.totalshake.domain.service.state.impl.PagoImpl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

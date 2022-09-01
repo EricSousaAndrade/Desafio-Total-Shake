@@ -1,4 +1,4 @@
-package br.com.desafio.totalshake.domain.service;
+package br.com.desafio.totalshake.domain.service.crud;
 
 import br.com.desafio.totalshake.application.controller.request.ItemPedidoDTO;
 import br.com.desafio.totalshake.application.controller.request.PedidoDTOPost;
@@ -7,9 +7,10 @@ import br.com.desafio.totalshake.builders.PedidoBuilder;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
-import br.com.desafio.totalshake.impl.CanceladoImpl;
-import br.com.desafio.totalshake.impl.CriadoImpl;
-import br.com.desafio.totalshake.impl.RealizadoImpl;
+import br.com.desafio.totalshake.domain.service.crud.PedidoCrudService;
+import br.com.desafio.totalshake.domain.service.state.impl.CanceladoImpl;
+import br.com.desafio.totalshake.domain.service.state.impl.CriadoImpl;
+import br.com.desafio.totalshake.domain.service.state.impl.RealizadoImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
