@@ -6,7 +6,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "data_hora_status_pedido")
+@Table(name = "DATA_HORA_STATUS_PEDIDO")
 public class DataHoraStatusPedido {
 
     @Id
@@ -18,30 +18,39 @@ public class DataHoraStatusPedido {
     private Pedido pedido;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_criado")
     private LocalDateTime dataHoraCriado;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_realizado")
     private LocalDateTime dataHoraRealizado;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_cancelado")
     private LocalDateTime dataHoraCancelado;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_pago")
     private LocalDateTime dataHoraPago;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_confirmado")
     private LocalDateTime dataHoraConfirmado;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_pronto")
     private LocalDateTime dataHoraPronto;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_saiu_para_entrega")
     private LocalDateTime dataHoraSaiuParaEntrega;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_entrega")
     private LocalDateTime dataHoraEntrega;
 
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
+    @Column(name = "data_hora_pagamento_recusado")
     private LocalDateTime dataHoraPagamentoRecusado;
 
     public void salvarDataHoraCriacao(){

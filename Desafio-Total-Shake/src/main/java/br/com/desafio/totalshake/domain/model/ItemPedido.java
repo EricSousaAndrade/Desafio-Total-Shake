@@ -7,7 +7,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "item_pedido")
+@Table(name = "ITEM_PEDIDO")
 public class ItemPedido {
 
     @Id
@@ -62,8 +62,8 @@ public class ItemPedido {
     private void validarQuantidade(int quantidade) {
         if(quantidade <= 0){
             throw new QuantidadeInvalidaException(
-                    CodInternoErroApi.AP004.getCodigo(),
-                    CodInternoErroApi.AP004.getMensagem()
+                    CodInternoErroApi.AP203.getCodigo(),
+                    CodInternoErroApi.AP203.getMensagem()
             );
         }
     }

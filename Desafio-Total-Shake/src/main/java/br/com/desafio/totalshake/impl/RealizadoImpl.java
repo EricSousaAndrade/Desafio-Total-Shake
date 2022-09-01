@@ -1,5 +1,6 @@
 package br.com.desafio.totalshake.impl;
 
+import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
 import br.com.desafio.totalshake.application.errors.exceptions.StatusInvalidoException;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
@@ -27,31 +28,55 @@ public class RealizadoImpl implements EstadoPedido {
 
     @Override
     public void confirmarPedido() {
-        throw new StatusInvalidoException("Operação inválida, o pedido está em status de: " + realizado);
+        throw new StatusInvalidoException(
+                CodInternoErroApi.AP301.getMensagem(),
+                CodInternoErroApi.AP301.getCodigo(),
+                realizado
+        );
     }
 
     @Override
     public void realizarPedido() {
-        throw new StatusInvalidoException("Operação inválida, o pedido está em status de: " + realizado);
+        throw new StatusInvalidoException(
+                CodInternoErroApi.AP301.getMensagem(),
+                CodInternoErroApi.AP301.getCodigo(),
+                realizado
+        );
     }
 
     @Override
     public void pedidoPronto() {
-        throw new StatusInvalidoException("Operação inválida, o pedido está em status de: " + realizado);
+        throw new StatusInvalidoException(
+                CodInternoErroApi.AP301.getMensagem(),
+                CodInternoErroApi.AP301.getCodigo(),
+                realizado
+        );
     }
 
     @Override
     public void pedidoSaiuParaEntrega() {
-        throw new StatusInvalidoException("Operação inválida, o pedido está em status de: " + realizado);
+        throw new StatusInvalidoException(
+                CodInternoErroApi.AP301.getMensagem(),
+                CodInternoErroApi.AP301.getCodigo(),
+                realizado
+        );
     }
 
     @Override
     public void pedidoEntregue() {
-        throw new StatusInvalidoException("Operação inválida, o pedido está em status de: " + realizado);
+        throw new StatusInvalidoException(
+                CodInternoErroApi.AP301.getMensagem(),
+                CodInternoErroApi.AP301.getCodigo(),
+                realizado
+        );
     }
 
     @Override
     public void naoAutorizarPedido() {
-        throw new StatusInvalidoException("Operação inválida, o pedido está em status de: " + realizado);
+        throw new StatusInvalidoException(
+                CodInternoErroApi.AP301.getMensagem(),
+                CodInternoErroApi.AP301.getCodigo(),
+                realizado
+        );
     }
 }

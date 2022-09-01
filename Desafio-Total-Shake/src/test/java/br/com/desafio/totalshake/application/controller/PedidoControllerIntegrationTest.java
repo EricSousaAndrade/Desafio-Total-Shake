@@ -130,7 +130,56 @@ public class PedidoControllerIntegrationTest {
     }
 
     @Nested
-    class TestesAtualizacaoDoStatusDePedido{
+    class TestesCancelarPedido{
+
+        @Test
+        @Transactional
+        public void deve_alterarUmPedidoExistenteParaCanceladoE_devolverDTOParaOCliente() throws Exception{
+            var pedido = PedidoBuilder.umPedido().comEstadoCriado().comUmItemPedido().build();
+
+            var pedidoSalvo = pedidoRepository.save(pedido);
+
+            mockMvc.perform(put(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/cancelar"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("id").isNotEmpty())
+                    .andExpect(jsonPath("dataHora").isNotEmpty())
+                    .andExpect(jsonPath("status").value(Status.CANCELADO.name()))
+                    .andExpect(jsonPath("itens").isNotEmpty())
+                    .andExpect(jsonPath("dataHoraStatus").isNotEmpty());
+
+            Pedido pedidoAlterado = pedidoRepository.findAll().get(0);
+
+            assertAll(
+                    () -> assertEquals(1, pedidoAlterado.getItens().size()),
+                    () -> assertEquals(Status.CANCELADO, pedidoAlterado.getStatus()),
+                    () -> assertTrue(pedidoAlterado.getEstadoPedido() instanceof CanceladoImpl),
+                    () -> assertNotNull(pedidoAlterado.getDataHoraStatus().getDataHoraCancelado())
+            );
+        }
+
+        @Test
+        @Transactional
+        // todo: Fazer parametrizável com todos os status diferentes de CRIADO e REALIZADO como argumento do teste
+        public void deve_lancarExcecaoDeStatus_aoCancelarPedidoComStatus_devolverDTODeErroParaOCliente() throws Exception{
+
+            var pedido = PedidoBuilder.umPedido().comEstadoPago().comUmItemPedido().build();
+
+            var pedidoSalvo = pedidoRepository.save(pedido);
+
+            mockMvc.perform(put(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/cancelar"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP301.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP301.getCodigo()))
+                    .andExpect(jsonPath("statusPedido").value(pedido.getStatus().name()));
+
+            Pedido pedidoInalterado = pedidoRepository.findAll().get(0);
+            assertFalse(pedidoInalterado.getEstadoPedido() instanceof CanceladoImpl);
+            assertNotEquals(Status.CANCELADO, pedidoInalterado.getStatus());
+        }
+    }
+
+    @Nested
+    class TestesRealizarPedido{
 
         @Test
         @Transactional
@@ -158,28 +207,24 @@ public class PedidoControllerIntegrationTest {
 
         @Test
         @Transactional
-        public void deve_alterarUmPedidoExistenteParaCanceladoE_devolverDTOParaOCliente() throws Exception{
-            var pedido = PedidoBuilder.umPedido().comEstadoCriado().comUmItemPedido().build();
+        // todo: Fazer parametrizável com todos os status diferentes de Criado como argumento do teste
+        public void deve_lancarExcecaoDeStatus_aoRealizarPedidoComStatusDiferenteDeCriado_devolverDTODeErroParaOCliente() throws Exception{
+
+            var pedido = PedidoBuilder.umPedido().comEstadoPago().comUmItemPedido().build();
 
             var pedidoSalvo = pedidoRepository.save(pedido);
 
-            mockMvc.perform(put(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/cancelar"))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("id").isNotEmpty())
-                    .andExpect(jsonPath("dataHora").isNotEmpty())
-                    .andExpect(jsonPath("status").value(Status.CANCELADO.name()))
-                    .andExpect(jsonPath("itens").isNotEmpty())
-                    .andExpect(jsonPath("dataHoraStatus").isNotEmpty());
+            mockMvc.perform(put(PEDIDO_URI +"/"+pedidoSalvo.getId()+"/realizar"))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP301.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP301.getCodigo()))
+                    .andExpect(jsonPath("statusPedido").value(pedido.getStatus().name()));
 
-            Pedido pedidoAlterado = pedidoRepository.findAll().get(0);
-
-            assertAll(
-                    () -> assertEquals(1, pedidoAlterado.getItens().size()),
-                    () -> assertEquals(Status.CANCELADO, pedidoAlterado.getStatus()),
-                    () -> assertTrue(pedidoAlterado.getEstadoPedido() instanceof CanceladoImpl),
-                    () -> assertNotNull(pedidoAlterado.getDataHoraStatus().getDataHoraCancelado())
-            );
+            Pedido pedidoInalterado = pedidoRepository.findAll().get(0);
+            assertFalse(pedidoInalterado.getEstadoPedido() instanceof RealizadoImpl);
+            assertNotEquals(Status.REALIZADO, pedidoInalterado.getStatus());
         }
+
     }
 
     @Nested
@@ -206,8 +251,8 @@ public class PedidoControllerIntegrationTest {
 
             mockMvc.perform(get(PEDIDO_URI +"/"+1L))
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP002.getMensagem()))
-                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP002.getCodigo()));
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP201.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP201.getCodigo()));
 
             int registrosDePedidoNoDatabase = pedidoRepository.findAll().size();
             assertEquals(0, registrosDePedidoNoDatabase);
@@ -322,8 +367,8 @@ public class PedidoControllerIntegrationTest {
                                     +"/itens/" +itemDoPedido.getId() +"/reduzir/"+quantidadeInvalida)
                     )
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP004.getMensagem()))
-                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP004.getCodigo()));
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP203.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP203.getCodigo()));
 
             var pedidoDB = pedidoRepository.findAll().get(0);
             assertEquals(2, pedidoDB.getItens().get(0).getQuantidade());
@@ -340,8 +385,8 @@ public class PedidoControllerIntegrationTest {
                                     +"/itens/" +1L +"/acrescentar/"+1)
                     )
                     .andExpect(status().isNotFound())
-                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP003.getMensagem()))
-                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP003.getCodigo()));
+                    .andExpect(jsonPath("mensagem").value(CodInternoErroApi.AP202.getMensagem()))
+                    .andExpect(jsonPath("codInterno").value(CodInternoErroApi.AP202.getCodigo()));
 
 
             var pedidoSemItens = pedidoRepository.findAll().get(0);

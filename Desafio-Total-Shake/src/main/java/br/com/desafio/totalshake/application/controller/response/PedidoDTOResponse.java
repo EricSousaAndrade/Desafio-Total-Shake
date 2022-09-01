@@ -26,7 +26,6 @@ public class PedidoDTOResponse {
     private final List<ItemPedido> itens;
 
     @JsonIgnoreProperties(value = {"pedido", "id"})
-    @JsonProperty("dataHoraStatus")
     private final DataHoraStatusPedido dataHoraStatus;
 
     public PedidoDTOResponse(Pedido pedidoCriado) {

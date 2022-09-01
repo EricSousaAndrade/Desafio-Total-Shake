@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
-@Table(name = "pedido")
+@Table(name = "PEDIDO")
 public class Pedido {
 
     @Id
@@ -24,6 +24,7 @@ public class Pedido {
     )
     private DataHoraStatusPedido dataHoraStatus;
 
+    @Column(name = "data_hora")
     private LocalDateTime dataHora;
 
     @Enumerated(EnumType.STRING)
@@ -54,8 +55,8 @@ public class Pedido {
                         itemPedido -> itemPedido.acrescentarQuantidadeItem(quantidade),
                         () -> {
                             throw new ItemInexistenteException(
-                                    CodInternoErroApi.AP003.getCodigo(),
-                                    CodInternoErroApi.AP003.getMensagem()
+                                    CodInternoErroApi.AP202.getCodigo(),
+                                    CodInternoErroApi.AP202.getMensagem()
                             );
                         }
                 );
@@ -73,8 +74,8 @@ public class Pedido {
                         },
                         () -> {
                             throw new ItemInexistenteException(
-                                    CodInternoErroApi.AP003.getCodigo(),
-                                    CodInternoErroApi.AP003.getMensagem()
+                                    CodInternoErroApi.AP202.getCodigo(),
+                                    CodInternoErroApi.AP202.getMensagem()
                             );
                         }
                 );

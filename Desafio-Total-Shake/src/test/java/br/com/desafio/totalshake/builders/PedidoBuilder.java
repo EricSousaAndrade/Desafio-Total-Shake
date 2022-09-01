@@ -3,6 +3,7 @@ package br.com.desafio.totalshake.builders;
 import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.impl.CriadoImpl;
+import br.com.desafio.totalshake.impl.PagoImpl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -37,10 +38,12 @@ public class PedidoBuilder {
         return this;
     }
 
+    public PedidoBuilder comEstadoPago() {
+        pedido.setEstadoPedido(new PagoImpl(pedido));
+        return this;
+    }
+
     public Pedido build(){
         return this.pedido;
     }
-
-
-
 }
