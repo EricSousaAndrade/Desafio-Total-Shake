@@ -26,8 +26,7 @@ public class PedidoCrudService {
 
         var pedido = pedidoDTOPost.toPedidoModel();
 
-        pedido.setStatus(Status.CRIADO);
-        pedido.getDataHoraStatus().salvarDataHoraCriacao();
+        pedido.criarPedido();
         pedido = pedidoRepository.save(pedido);
 
         return new PedidoDTOResponse(pedido);
@@ -36,9 +35,7 @@ public class PedidoCrudService {
     @Transactional
     public PedidoDTOResponse realizarPedido(Long idPedido) {
         var pedido = buscarPedidoPorId(idPedido);
-
-        pedido.setStatus(Status.REALIZADO);
-        pedido.getDataHoraStatus().salvarDataHoraRealizado();
+        pedido.realizarPedido();
         pedido = pedidoRepository.save(pedido);
 
         return new PedidoDTOResponse(pedido);
@@ -47,8 +44,7 @@ public class PedidoCrudService {
     @Transactional
     public PedidoDTOResponse cancelarPedido(Long idPedido) {
         var pedido = this.buscarPedidoPorId(idPedido);
-        pedido.setStatus(Status.CANCELADO);
-        pedido.getDataHoraStatus().salvarDataHoraCancelado();
+        pedido.cancelarPedido();
         pedido = pedidoRepository.save(pedido);
 
         return new PedidoDTOResponse(pedido);

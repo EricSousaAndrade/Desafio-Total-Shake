@@ -7,6 +7,9 @@ import br.com.desafio.totalshake.builders.PedidoBuilder;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
+import br.com.desafio.totalshake.impl.CanceladoImpl;
+import br.com.desafio.totalshake.impl.CriadoImpl;
+import br.com.desafio.totalshake.impl.RealizadoImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -55,6 +58,7 @@ public class PedidoCrudServiceTest {
 
             assertAll(
                     () -> assertEquals(Status.CRIADO, pedidoCapturado.getStatus()),
+                    () -> assertTrue(pedidoCapturado.getEstadoPedido() instanceof CriadoImpl),
                     () -> assertNotNull(pedidoCapturado.getDataHoraStatus().getDataHoraCriado()),
                     () -> assertEquals(2, pedidoCapturado.getItens().size())
             );
@@ -63,7 +67,7 @@ public class PedidoCrudServiceTest {
         @Test
         public void deve_setarOStatusComoRealizado_aoRealizarUmPedido(){
 
-            var pedido = PedidoBuilder.umPedido().build();
+            var pedido = PedidoBuilder.umPedido().comEstadoCriado().build();
             ArgumentCaptor<Pedido> pedidoCapturadoNoRetornoDeSave = ArgumentCaptor.forClass(Pedido.class);
 
             when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
@@ -77,13 +81,14 @@ public class PedidoCrudServiceTest {
 
             assertAll(
                     () -> assertEquals(Status.REALIZADO, pedidoCapturado.getStatus()),
+                    () -> assertTrue(pedidoCapturado.getEstadoPedido() instanceof RealizadoImpl),
                     () -> assertNotNull(pedidoCapturado.getDataHoraStatus().getDataHoraRealizado())
             );
         }
 
         @Test
         public void deve_setarOStatusComoCancelado_aoCancelarUmPedido(){
-            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+            var pedido = PedidoBuilder.umPedido().comEstadoCriado().comUmItemPedido().build();
             ArgumentCaptor<Pedido> pedidoCapturadoNoRetornoDeSave = ArgumentCaptor.forClass(Pedido.class);
 
             when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
@@ -97,6 +102,7 @@ public class PedidoCrudServiceTest {
 
             assertAll(
                     () -> assertEquals(Status.CANCELADO, pedidoCapturado.getStatus()),
+                    () -> assertTrue(pedidoCapturado.getEstadoPedido() instanceof CanceladoImpl),
                     () -> assertNotNull(pedidoCapturado.getDataHoraStatus().getDataHoraCancelado())
             );
         }

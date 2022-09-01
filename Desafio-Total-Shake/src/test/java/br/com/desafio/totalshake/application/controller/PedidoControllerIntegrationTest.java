@@ -8,6 +8,9 @@ import br.com.desafio.totalshake.domain.model.ItemPedido;
 import br.com.desafio.totalshake.domain.model.Pedido;
 import br.com.desafio.totalshake.domain.model.Status;
 import br.com.desafio.totalshake.domain.repository.PedidoRepository;
+import br.com.desafio.totalshake.impl.CanceladoImpl;
+import br.com.desafio.totalshake.impl.CriadoImpl;
+import br.com.desafio.totalshake.impl.RealizadoImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,7 +64,7 @@ public class PedidoControllerIntegrationTest {
         @Test
         @Transactional
         public void deve_criarUmPedidoComUmItem_e_devolverDTOPedidoStatusCriado() throws Exception{
-            var pedidoRequest = PedidoBuilder.umPedido().comUmItemPedido().build();
+            var pedidoRequest = umPedidoRequestValido();
 
             String pedidoRequestJson = objectMapper.writeValueAsString(pedidoRequest);
 
@@ -79,6 +82,7 @@ public class PedidoControllerIntegrationTest {
 
             assertAll(
                     () -> assertEquals(1, pedidoCriado.getItens().size()),
+                    () -> assertTrue(pedidoCriado.getEstadoPedido() instanceof CriadoImpl),
                     () -> assertEquals(Status.CRIADO, pedidoCriado.getStatus()),
                     () -> assertNotNull(pedidoCriado.getDataHoraStatus().getDataHoraCriado())
             );
@@ -114,6 +118,15 @@ public class PedidoControllerIntegrationTest {
             return pedidoDto;
         }
 
+        private PedidoDTOPost umPedidoRequestValido() {
+            var pedidoDto = new PedidoDTOPost();
+            pedidoDto.setItens(new ArrayList<>(Arrays.asList(
+                    new ItemPedidoDTO("Trakinas", 1)
+            )));
+
+            return pedidoDto;
+        }
+
     }
 
     @Nested
@@ -123,7 +136,7 @@ public class PedidoControllerIntegrationTest {
         @Transactional
         public void deve_alterarUmPedidoExistenteParaRealizadoE_devolverDTOParaOCliente() throws Exception{
 
-            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+            var pedido = PedidoBuilder.umPedido().comEstadoCriado().comUmItemPedido().build();
 
             var pedidoSalvo = pedidoRepository.save(pedido);
 
@@ -138,6 +151,7 @@ public class PedidoControllerIntegrationTest {
             var pedidoAlterado = pedidoRepository.findAll().get(0);
             assertAll(
                     () -> assertEquals(Status.REALIZADO, pedidoAlterado.getStatus()),
+                    () -> assertTrue(pedidoAlterado.getEstadoPedido() instanceof RealizadoImpl),
                     () -> assertNotNull(pedidoAlterado.getDataHoraStatus().getDataHoraRealizado())
             );
         }
@@ -145,7 +159,7 @@ public class PedidoControllerIntegrationTest {
         @Test
         @Transactional
         public void deve_alterarUmPedidoExistenteParaCanceladoE_devolverDTOParaOCliente() throws Exception{
-            var pedido = PedidoBuilder.umPedido().comUmItemPedido().build();
+            var pedido = PedidoBuilder.umPedido().comEstadoCriado().comUmItemPedido().build();
 
             var pedidoSalvo = pedidoRepository.save(pedido);
 
@@ -160,8 +174,9 @@ public class PedidoControllerIntegrationTest {
             Pedido pedidoAlterado = pedidoRepository.findAll().get(0);
 
             assertAll(
-                    () ->  assertEquals(1, pedidoAlterado.getItens().size()),
+                    () -> assertEquals(1, pedidoAlterado.getItens().size()),
                     () -> assertEquals(Status.CANCELADO, pedidoAlterado.getStatus()),
+                    () -> assertTrue(pedidoAlterado.getEstadoPedido() instanceof CanceladoImpl),
                     () -> assertNotNull(pedidoAlterado.getDataHoraStatus().getDataHoraCancelado())
             );
         }

@@ -2,6 +2,8 @@ package br.com.desafio.totalshake.domain.model;
 
 import br.com.desafio.totalshake.application.errors.exceptions.ItemInexistenteException;
 import br.com.desafio.totalshake.application.errors.CodInternoErroApi;
+import br.com.desafio.totalshake.domain.service.EstadoPedido;
+import br.com.desafio.totalshake.impl.EstadoPedidoFactory;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -25,7 +27,10 @@ public class Pedido {
     private LocalDateTime dataHora;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status = Status.CRIADO;
+
+    @Transient
+    private  EstadoPedido estadoPedido;
 
     @OneToMany(
             mappedBy = "pedido",
@@ -38,13 +43,6 @@ public class Pedido {
         this.garantirNullSafetyItens();
         itemPedido.setPedido(this);
         itens.add(itemPedido);
-    }
-
-    public DataHoraStatusPedido getDataHoraStatus() {
-        if(this.dataHoraStatus == null){
-            this.dataHoraStatus = new DataHoraStatusPedido();
-        }
-        return dataHoraStatus;
     }
 
     public void acrescentarItemDoPedido(long idItemPedido, int quantidade) {
@@ -82,9 +80,59 @@ public class Pedido {
                 );
     }
 
+    public void criarPedido() {
+        this.garantirNullSafetyEstadoPedido();
+        this.garantirNullSafetyDataHoraStatus();
+        this.dataHoraStatus.salvarDataHoraCriacao();
+    }
+
+    public void realizarPedido(){
+        this.garantirNullSafetyEstadoPedido();
+        this.estadoPedido.realizarPedido();
+        this.garantirNullSafetyDataHoraStatus();
+        this.dataHoraStatus.salvarDataHoraRealizado();
+    }
+
+    public void cancelarPedido(){
+        this.garantirNullSafetyEstadoPedido();
+        this.estadoPedido.cancelarPedido();
+        this.garantirNullSafetyDataHoraStatus();
+        this.dataHoraStatus.salvarDataHoraCancelado();
+    }
+
+    private void garantirNullSafetyItens() {
+        if(itens == null){
+            itens = new ArrayList<>();
+        }
+    }
+
+    private void garantirNullSafetyEstadoPedido() {
+        if(this.estadoPedido == null){
+            this.estadoPedido = EstadoPedidoFactory.ofStatus(this.status, this);
+        }
+    }
+
+    private void garantirNullSafetyDataHoraStatus() {
+        if(this.dataHoraStatus == null){
+            this.dataHoraStatus = new DataHoraStatusPedido();
+        }
+    }
+
     @PrePersist
     public void setarUltimaAtualizacaoPedido(){
         this.dataHora = LocalDateTime.now();
+    }
+
+    public DataHoraStatusPedido getDataHoraStatus() {
+        if(this.dataHoraStatus == null){
+            this.dataHoraStatus = new DataHoraStatusPedido();
+        }
+        return dataHoraStatus;
+    }
+
+    public EstadoPedido getEstadoPedido() {
+        this.garantirNullSafetyEstadoPedido();
+        return estadoPedido;
     }
 
     public List<ItemPedido> getItens() {
@@ -93,6 +141,10 @@ public class Pedido {
 
     public void setItens(List<ItemPedido> itens) {
         this.itens = itens;
+    }
+
+    public void setEstadoPedido(EstadoPedido estadoPedido) {
+        this.estadoPedido = estadoPedido;
     }
 
     public LocalDateTime getDataHora() {
@@ -119,12 +171,6 @@ public class Pedido {
         this.id = id;
     }
 
-    private void garantirNullSafetyItens() {
-        if(itens == null){
-            itens = new ArrayList<>();
-        }
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -137,5 +183,6 @@ public class Pedido {
     public int hashCode() {
         return Objects.hash(id);
     }
+
 
 }
