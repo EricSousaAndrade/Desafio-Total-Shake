@@ -76,4 +76,8 @@ public class DataHoraStatusPedido {
     public LocalDateTime getDataHoraCancelado() {
         return dataHoraCancelado;
     }
+
+    public void setPedido(Pedido pedido) {
+        this.pedido = pedido;
+    }
 }

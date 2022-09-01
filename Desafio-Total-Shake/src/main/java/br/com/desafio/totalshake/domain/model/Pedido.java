@@ -116,6 +116,7 @@ public class Pedido {
     private void garantirNullSafetyDataHoraStatus() {
         if(this.dataHoraStatus == null){
             this.dataHoraStatus = new DataHoraStatusPedido();
+            this.dataHoraStatus.setPedido(this);
         }
     }
 
