@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 public class PedidoControllerIntegrationTest {
 
-    private final String PEDIDO_URI = "/pedidos";
+    private final String PEDIDO_URI = "/v1/pedidos";
 
     @Autowired
     private ObjectMapper objectMapper;
