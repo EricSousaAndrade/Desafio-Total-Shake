@@ -12,7 +12,7 @@ import javax.validation.Valid;
 import java.util.Locale;
 
 @RestController
-@RequestMapping("/pedidos")
+@RequestMapping("v1/pedidos")
 public class PedidoController {
 
     private final PedidoCrudService pedidoCrudService;
